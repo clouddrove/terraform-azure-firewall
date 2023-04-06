@@ -65,6 +65,21 @@ resource "azurerm_firewall_policy" "policy" {
   name                = format("%s-firewall-FirewallPolicy", module.labels.id)
   resource_group_name = var.resource_group_name
   location            = var.location
+  sku                 = var.sku_policy
+  dynamic "identity" {
+    for_each = var.identity_type != null && var.sku_policy == "Premium" && var.sku_tier == "Premium" ? [1] : []
+    content {
+      type         = var.identity_type
+      identity_ids = var.identity_type == "UserAssigned" ? [join("", azurerm_user_assigned_identity.identity.*.id)] : null
+    }
+  }
+}
+
+resource "azurerm_user_assigned_identity" "identity" {
+  count               = var.enabled ? 1 : 0
+  location            = var.location
+  name                = format("%s-fw-policy-mid", module.labels.id)
+  resource_group_name = var.resource_group_name
 }
 
 resource "azurerm_firewall_policy_rule_collection_group" "app_policy_rule_collection_group" {
@@ -171,6 +186,9 @@ resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rule_collec
 }
 
 resource "azurerm_monitor_diagnostic_setting" "example" {
+  depends_on = [
+    azurerm_firewall_policy_rule_collection_group.nat_policy_rule_collection_group
+  ]
   count                          = var.enable_diagnostic ? 1 : 0
   name                           = format("firewall-diagnostic-log")
   target_resource_id             = azurerm_firewall.firewall[0].id

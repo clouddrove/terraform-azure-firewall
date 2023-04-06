@@ -4,9 +4,9 @@ provider "azurerm" {
 
 module "resource_group" {
   source  = "clouddrove/resource-group/azure"
-  version = "1.0.0"
+  version = "1.0.2"
 
-  name        = "app"
+  name        = "app-fw"
   environment = "test"
   label_order = ["environment", "name", ]
   location    = "East US"
@@ -15,7 +15,7 @@ module "resource_group" {
 module "vnet" {
   depends_on = [module.resource_group]
   source     = "clouddrove/vnet/azure"
-  version    = "1.0.0"
+  version    = "1.0.1"
 
   name                = "app"
   environment         = "test"
@@ -23,12 +23,12 @@ module "vnet" {
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
   address_space       = "10.0.0.0/16"
-  enable_ddos_pp      = false
 }
 
 module "name_specific_subnet" {
   depends_on           = [module.vnet]
   source               = "clouddrove/subnet/azure"
+  version              = "1.0.2"
   name                 = "app"
   environment          = "test"
   label_order          = ["name", "environment"]
@@ -42,7 +42,6 @@ module "name_specific_subnet" {
   subnet_prefixes       = ["10.0.1.0/24"]
 
   # route_table
-  enable_route_table = false
   routes = [
     {
       name           = "rt-test"
@@ -156,7 +155,7 @@ module "firewall" {
           destination_ports   = ["80"]
           source_addresses    = ["*"]
           translated_port     = "80"
-          translated_address  = "X.X.X.X"
+          translated_address  = "10.1.1.1"                           #provide private ip address to translate 
           destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall. Here index 1 indicates 'vnet ip' (from public_ip_names     = ["ingress" , "vnet"])
 
         },
@@ -166,7 +165,7 @@ module "firewall" {
           destination_ports   = ["443"]
           source_addresses    = ["*"]
           translated_port     = "443"
-          translated_address  = "X.X.X.X"
+          translated_address  = "10.1.1.1"                           #provide private ip address to translate 
           destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall
 
         }
@@ -183,7 +182,7 @@ module "firewall" {
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["80"]
           translated_port     = "80"
-          translated_address  = ["X.X.X.X"]
+          translated_address  = "10.1.1.2"                           #provide private ip address to translate 
           destination_address = module.firewall.public_ip_address[0] //Public ip associated with firewall.Here index 0 indicates 'ingress ip' (from public_ip_names     = ["ingress" , "vnet"])
 
         },
@@ -193,7 +192,7 @@ module "firewall" {
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["443"]
           translated_port     = "443"
-          translated_address  = ["X.X.X.X"]
+          translated_address  = "10.1.1.2"                           #provide private ip address to translate 
           destination_address = module.firewall.public_ip_address[0] //Public ip associated with firewall
         }
       ]
