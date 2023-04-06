@@ -228,6 +228,7 @@ nat_rule_collection = [
 | eventhub\_authorization\_rule\_id | Eventhub authorization rule id to pass it to destination details of diagnosys setting of NSG. | `string` | `null` | no |
 | eventhub\_name | Eventhub Name to pass it to destination details of diagnosys setting of NSG. | `string` | `null` | no |
 | firewall\_private\_ip\_ranges | A list of SNAT private CIDR IP ranges, or the special string `IANAPrivateRanges`, which indicates Azure Firewall does not SNAT when the destination IP address is a private range per IANA RFC 1918. | `list(string)` | `null` | no |
+| identity\_type | Specifies the type of Managed Service Identity that should be configured on this Storage Account. Possible values are `SystemAssigned`, `UserAssigned`, `SystemAssigned, UserAssigned` (to enable both). | `string` | `"UserAssigned"` | no |
 | label\_order | Label order, e.g. sequence of application name and environment `name`,`environment`,'attribute' [`webserver`,`qa`,`devops`,`public`,] . | `list(any)` | `[]` | no |
 | location | The location/region where the virtual network is created. Changing this forces a new resource to be created. | `string` | `""` | no |
 | log\_analytics\_workspace\_id | log analytics workspace id to pass it to destination details of diagnosys setting of NSG. | `string` | `null` | no |
@@ -244,6 +245,7 @@ nat_rule_collection = [
 | resource\_group\_name | A container that holds related resources for an Azure solution | `string` | `""` | no |
 | retention\_policy\_enabled | Set to false to prevent the module from creating retension policy for the diagnosys setting. | `bool` | `false` | no |
 | sku\_name | (optional) describe your variable | `string` | `"AZFW_VNet"` | no |
+| sku\_policy | Specifies the firewall-policy sku | `string` | `"Standard"` | no |
 | sku\_tier | Specifies the firewall sku tier | `string` | `"Standard"` | no |
 | storage\_account\_id | Storage account id to pass it to destination details of diagnosys setting of NSG. | `string` | `null` | no |
 | subnet\_id | Subnet ID | `string` | `""` | no |
