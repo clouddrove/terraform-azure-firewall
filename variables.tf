@@ -78,6 +78,12 @@ variable "sku_tier" {
   type        = string
 }
 
+variable "sku_policy" {
+  description = "Specifies the firewall-policy sku"
+  default     = "Standard"
+  type        = string
+}
+
 variable "sku_name" {
   type        = string
   default     = "AZFW_VNet"
@@ -206,4 +212,10 @@ variable "days" {
   type        = number
   default     = 365
   description = "Number of days to create retension policies for te diagnosys setting."
+}
+
+variable "identity_type" {
+  description = "Specifies the type of Managed Service Identity that should be configured on this Storage Account. Possible values are `SystemAssigned`, `UserAssigned`, `SystemAssigned, UserAssigned` (to enable both)."
+  type        = string
+  default     = "UserAssigned"
 }
