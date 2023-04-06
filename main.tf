@@ -67,16 +67,16 @@ resource "azurerm_firewall_policy" "policy" {
   location            = var.location
   sku                 = var.sku_policy
   dynamic "identity" {
-    for_each = var.identity_type != null  &&  var.sku_policy == "Premium" && var.sku_tier == "Premium" ? [1] : []
+    for_each = var.identity_type != null && var.sku_policy == "Premium" && var.sku_tier == "Premium" ? [1] : []
     content {
       type         = var.identity_type
-      identity_ids = var.identity_type == "UserAssigned"  ? [join("", azurerm_user_assigned_identity.identity.*.id)] : null
+      identity_ids = var.identity_type == "UserAssigned" ? [join("", azurerm_user_assigned_identity.identity.*.id)] : null
     }
   }
 }
 
 resource "azurerm_user_assigned_identity" "identity" {
-  count               = var.enabled  ? 1 : 0
+  count               = var.enabled ? 1 : 0
   location            = var.location
   name                = format("%s-fw-policy-mid", module.labels.id)
   resource_group_name = var.resource_group_name
