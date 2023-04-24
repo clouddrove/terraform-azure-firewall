@@ -66,10 +66,11 @@ module "log-analytics" {
   log_analytics_workspace_location = module.resource_group.resource_group_location
 }
 
+
 module "firewall" {
   depends_on          = [module.name_specific_subnet]
+  source              = "../.."
   name                = "app"
-  source              = "../"
   environment         = "test"
   label_order         = ["name", "environment"]
   resource_group_name = module.resource_group.resource_group_name
@@ -81,10 +82,10 @@ module "firewall" {
   # name = "public-ip_name",
   # public_ip_address_id = "public-ip_resource_id"
   #   } ]
-
-
-
-  dnat-destination_ip = true // To be true when dnat policy is to be created.
+  firewall_enable            = true
+  policy_rule_enabled        = true
+  enable_diagnostic          = false
+  log_analytics_workspace_id = module.log-analytics.workspace_id
 
   application_rule_collection = [
     {
@@ -155,7 +156,7 @@ module "firewall" {
           destination_ports   = ["80"]
           source_addresses    = ["*"]
           translated_port     = "80"
-          translated_address  = "10.1.1.1"                           #provide private ip address to translate 
+          translated_address  = "10.1.1.1"                           #provide private ip address to translate
           destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall. Here index 1 indicates 'vnet ip' (from public_ip_names     = ["ingress" , "vnet"])
 
         },
@@ -165,7 +166,7 @@ module "firewall" {
           destination_ports   = ["443"]
           source_addresses    = ["*"]
           translated_port     = "443"
-          translated_address  = "10.1.1.1"                           #provide private ip address to translate 
+          translated_address  = "10.1.1.1"                           #provide private ip address to translate
           destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall
 
         }
@@ -182,7 +183,7 @@ module "firewall" {
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["80"]
           translated_port     = "80"
-          translated_address  = "10.1.1.2"                           #provide private ip address to translate 
+          translated_address  = "10.1.1.2"                           #provide private ip address to translate
           destination_address = module.firewall.public_ip_address[0] //Public ip associated with firewall.Here index 0 indicates 'ingress ip' (from public_ip_names     = ["ingress" , "vnet"])
 
         },
@@ -192,14 +193,10 @@ module "firewall" {
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["443"]
           translated_port     = "443"
-          translated_address  = "10.1.1.2"                           #provide private ip address to translate 
+          translated_address  = "10.1.1.2"                           #provide private ip address to translate
           destination_address = module.firewall.public_ip_address[0] //Public ip associated with firewall
         }
       ]
     }
   ]
-
-  enable_diagnostic          = true
-  log_analytics_workspace_id = module.log-analytics.workspace_id
-
 }
