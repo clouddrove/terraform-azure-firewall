@@ -22,3 +22,7 @@ output "public_ip_id" {
 output "public_ip_address" {
   value = azurerm_public_ip.public_ip.*.ip_address
 }
+
+output "firewall_policy_id" {
+  value = join("", azurerm_firewall_policy.policy.*.id)
+}

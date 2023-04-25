@@ -167,7 +167,7 @@ variable "dns_servers" {
 variable "dnat-destination_ip" {
   description = "Variable to specify that you have destination ip to attach to policy or not.(Destination ip is public ip that is attached to firewall)"
   type        = bool
-  default     = false
+  default     = true
 }
 
 # Diagnosis Settings Enable
@@ -214,8 +214,28 @@ variable "days" {
   description = "Number of days to create retension policies for te diagnosys setting."
 }
 
+variable "firewall_enable" {
+  type    = bool
+  default = false
+}
+
 variable "identity_type" {
   description = "Specifies the type of Managed Service Identity that should be configured on this Storage Account. Possible values are `SystemAssigned`, `UserAssigned`, `SystemAssigned, UserAssigned` (to enable both)."
   type        = string
   default     = "UserAssigned"
+}
+
+variable "policy_rule_enable" {
+  type    = bool
+  default = false
+}
+variable "policy_rule_enabled" {
+  type    = bool
+  default = false
+}
+
+variable "firewall_policy_id" {
+  type        = string
+  default     = null
+  description = "The ID of the Firewall Policy."
 }
