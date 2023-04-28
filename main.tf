@@ -148,7 +148,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rule_co
 }
 
 resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rule_collection_group" {
-  count              = var.dnat-destination_ip && var.policy_rule_enabled ? 1 : 0
+  count              = var.enabled && var.dnat-destination_ip && var.policy_rule_enabled ? 1 : 0
   name               = var.nat_policy_collection_group
   firewall_policy_id = join("", azurerm_firewall_policy.policy.*.id)
   priority           = 100
@@ -242,7 +242,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rules_c
 }
 
 resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rules_collection_group" {
-  count              = var.dnat-destination_ip && var.policy_rule_enable ? 1 : 0
+  count              = var.enabled && var.dnat-destination_ip && var.policy_rule_enable ? 1 : 0
   name               = var.nat_policy_collection_group
   firewall_policy_id = var.firewall_policy_id
   priority           = 100
@@ -271,7 +271,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rules_colle
 }
 
 resource "azurerm_monitor_diagnostic_setting" "example" {
-  count                          = var.enable_diagnostic ? 1 : 0
+  count                          = var.enabled && var.enable_diagnostic ? 1 : 0
   name                           = format("firewall-diagnostic-log")
   target_resource_id             = azurerm_firewall.firewall[0].id
   storage_account_id             = var.storage_account_id
