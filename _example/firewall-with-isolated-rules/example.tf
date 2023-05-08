@@ -70,7 +70,7 @@ module "log-analytics" {
 
 module "firewall" {
   depends_on          = [module.name_specific_subnet]
-  source              = "../.."
+  source              = "git::https://github.com/clouddrove/terraform-azure-firewall.git"
   name                = "app"
   environment         = "test"
   label_order         = ["name", "environment"]
