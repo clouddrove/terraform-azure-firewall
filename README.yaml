@@ -44,7 +44,6 @@ usage: |-
       source               = "clouddrove/firewall/azure"
       name                = "app"
       environment         = "test"
-      label_order         = ["name", "environment"]
       resource_group_name = module.resource_group.resource_group_name
       location            = module.resource_group.resource_group_location
       subnet_id           = module.name_specific_subnet.specific_subnet_id[0]
@@ -181,7 +180,6 @@ usage: |-
     source               = "clouddrove/firewall/azure"
     name                = "app"
     environment         = "test"
-    label_order         = ["name", "environment"]
     resource_group_name = module.resource_group.resource_group_name
     location            = module.resource_group.resource_group_location
     subnet_id           = module.name_specific_subnet.specific_subnet_id[0]
@@ -201,7 +199,6 @@ usage: |-
     source             = "clouddrove/firewall/azure"
     name               = "app"
     environment        = "test"
-    label_order        = ["name", "environment"]
     policy_rule_enable = true
     firewall_policy_id = module.firewall.firewall_policy_id
 
