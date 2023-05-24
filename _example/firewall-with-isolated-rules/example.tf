@@ -6,20 +6,19 @@ module "resource_group" {
   source  = "clouddrove/resource-group/azure"
   version = "1.0.2"
 
-  name        = "app-fw"
+  name        = "app"
   environment = "test"
-  label_order = ["environment", "name", ]
+  label_order = ["name", "environment"]
   location    = "East US"
 }
 
 module "vnet" {
   depends_on = [module.resource_group]
   source     = "clouddrove/vnet/azure"
-  version    = "1.0.1"
+  version    = "1.0.2"
 
   name                = "app"
   environment         = "test"
-  label_order         = ["name", "environment"]
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
   address_space       = "10.0.0.0/16"
@@ -31,7 +30,6 @@ module "name_specific_subnet" {
   version              = "1.0.2"
   name                 = "app"
   environment          = "test"
-  label_order          = ["name", "environment"]
   resource_group_name  = module.resource_group.resource_group_name
   location             = module.resource_group.resource_group_location
   virtual_network_name = join("", module.vnet.vnet_name)
@@ -54,14 +52,11 @@ module "name_specific_subnet" {
 module "log-analytics" {
   source                           = "clouddrove/log-analytics/azure"
   version                          = "1.0.0"
-  name                             = "app1"
-  environment                      = "test1"
+  name                             = "app"
+  environment                      = "test"
   label_order                      = ["name", "environment"]
   create_log_analytics_workspace   = true
   log_analytics_workspace_sku      = "PerGB2018"
-  daily_quota_gb                   = "-1"
-  internet_ingestion_enabled       = true
-  internet_query_enabled           = true
   resource_group_name              = module.resource_group.resource_group_name
   log_analytics_workspace_location = module.resource_group.resource_group_location
 }
@@ -70,10 +65,9 @@ module "log-analytics" {
 
 module "firewall" {
   depends_on          = [module.name_specific_subnet]
-  source              = "git::https://github.com/clouddrove/terraform-azure-firewall.git"
+  source              = "../.."
   name                = "app"
   environment         = "test"
-  label_order         = ["name", "environment"]
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
   subnet_id           = module.name_specific_subnet.specific_subnet_id[0]
@@ -95,7 +89,6 @@ module "firewall-rules" {
   source             = "../.."
   name               = "app"
   environment        = "test"
-  label_order        = ["name", "environment"]
   policy_rule_enable = true
   firewall_policy_id = module.firewall.firewall_policy_id
 
