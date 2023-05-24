@@ -77,7 +77,6 @@ Here is an example of how you can use this module in your inventory structure:
     source               = "clouddrove/firewall/azure"
     name                = "app"
     environment         = "test"
-    label_order         = ["name", "environment"]
     resource_group_name = module.resource_group.resource_group_name
     location            = module.resource_group.resource_group_location
     subnet_id           = module.name_specific_subnet.specific_subnet_id[0]
@@ -214,7 +213,6 @@ Here is an example of how you can use this module in your inventory structure:
   source               = "clouddrove/firewall/azure"
   name                = "app"
   environment         = "test"
-  label_order         = ["name", "environment"]
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
   subnet_id           = module.name_specific_subnet.specific_subnet_id[0]
@@ -234,7 +232,6 @@ module "firewall-rules" {
   source             = "clouddrove/firewall/azure"
   name               = "app"
   environment        = "test"
-  label_order        = ["name", "environment"]
   policy_rule_enable = true
   firewall_policy_id = module.firewall.firewall_policy_id
 
@@ -378,7 +375,7 @@ module "firewall-rules" {
 | firewall\_policy\_id | The ID of the Firewall Policy. | `string` | `null` | no |
 | firewall\_private\_ip\_ranges | A list of SNAT private CIDR IP ranges, or the special string `IANAPrivateRanges`, which indicates Azure Firewall does not SNAT when the destination IP address is a private range per IANA RFC 1918. | `list(string)` | `null` | no |
 | identity\_type | Specifies the type of Managed Service Identity that should be configured on this Storage Account. Possible values are `SystemAssigned`, `UserAssigned`, `SystemAssigned, UserAssigned` (to enable both). | `string` | `"UserAssigned"` | no |
-| label\_order | Label order, e.g. sequence of application name and environment `name`,`environment`,'attribute' [`webserver`,`qa`,`devops`,`public`,] . | `list(any)` | `[]` | no |
+| label\_order | Label order, e.g. sequence of application name and environment `name`,`environment`,'attribute' [`webserver`,`qa`,`devops`,`public`,] . | `list(any)` | <pre>[<br>  "name",<br>  "environment"<br>]</pre> | no |
 | location | The location/region where the virtual network is created. Changing this forces a new resource to be created. | `string` | `""` | no |
 | log\_analytics\_workspace\_id | log analytics workspace id to pass it to destination details of diagnosys setting of NSG. | `string` | `null` | no |
 | managedby | ManagedBy, eg ''. | `string` | `""` | no |
