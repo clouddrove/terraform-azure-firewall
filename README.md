@@ -232,7 +232,7 @@ module "firewall-rules" {
   source             = "clouddrove/firewall/azure"
   name               = "app"
   environment        = "test"
-  policy_rule_enable = true
+  policy_rule_enabled= true
   firewall_policy_id = module.firewall.firewall_policy_id
 
   application_rule_collection = [
@@ -384,8 +384,7 @@ module "firewall-rules" {
 | nat\_rule\_collection | One or more nat\_rule\_collection blocks as defined below. | `map` | `{}` | no |
 | net\_policy\_collection\_group | (optional) Name of network policy group | `string` | `"DefaultNetworkRuleCollectionGroup"` | no |
 | network\_rule\_collection | One or more network\_rule\_collection blocks as defined below. | `map` | `{}` | no |
-| policy\_rule\_enable | n/a | `bool` | `false` | no |
-| policy\_rule\_enabled | n/a | `bool` | `false` | no |
+| policy\_rule\_enabled | Flah used to control creation of policy rules. | `bool` | `false` | no |
 | public\_ip\_allocation\_method | Defines the allocation method for this IP address. Possible values are Static or Dynamic | `string` | `"Static"` | no |
 | public\_ip\_names | n/a | `list(string)` | `[]` | no |
 | public\_ip\_sku | The SKU of the Public IP. Accepted values are Basic and Standard. Defaults to Basic | `string` | `"Standard"` | no |
