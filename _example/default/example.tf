@@ -2,43 +2,56 @@ provider "azurerm" {
   features {}
 }
 
-module "resource_group" {
-  source  = "clouddrove/resource-group/azure"
-  version = "1.0.2"
-
+locals {
   name        = "app"
   environment = "test"
+}
+
+##----------------------------------------------------------------------------- 
+## Resource Group module call
+## Resource group in which all resources will be deployed.
+##-----------------------------------------------------------------------------
+module "resource_group" {
+  source      = "clouddrove/resource-group/azure"
+  version     = "1.0.2"
+  name        = local.name
+  environment = local.environment
   label_order = ["name", "environment", ]
   location    = "East US"
 }
 
+##----------------------------------------------------------------------------- 
+## Virtual Network module call.
+## Virtual Network in firewall specific subnet will be created. 
+##-----------------------------------------------------------------------------
 module "vnet" {
-  depends_on = [module.resource_group]
-  source     = "clouddrove/vnet/azure"
-  version    = "1.0.2"
-
-  name                = "app"
-  environment         = "test"
+  depends_on          = [module.resource_group]
+  source              = "clouddrove/vnet/azure"
+  version             = "1.0.2"
+  name                = local.name
+  environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
   address_space       = "10.0.0.0/16"
 }
 
+##----------------------------------------------------------------------------- 
+## Subnet module call. 
+## Name specific subnet for firewall will be created. 
+##-----------------------------------------------------------------------------
 module "name_specific_subnet" {
   depends_on           = [module.vnet]
   source               = "clouddrove/subnet/azure"
   version              = "1.0.2"
-  name                 = "app"
-  environment          = "test"
+  name                 = local.name
+  environment          = local.environment
   resource_group_name  = module.resource_group.resource_group_name
   location             = module.resource_group.resource_group_location
   virtual_network_name = join("", module.vnet.vnet_name)
-
   #subnet
   specific_name_subnet  = true
   specific_subnet_names = "AzureFirewallSubnet"
   subnet_prefixes       = ["10.0.1.0/24"]
-
   # route_table
   routes = [
     {
@@ -49,11 +62,15 @@ module "name_specific_subnet" {
   ]
 }
 
+##----------------------------------------------------------------------------- 
+## Log Analytic Module Call.
+## Log Analytic workspace for firerwall diagnostic setting. 
+##-----------------------------------------------------------------------------
 module "log-analytics" {
   source                           = "clouddrove/log-analytics/azure"
   version                          = "1.0.0"
-  name                             = "app"
-  environment                      = "test"
+  name                             = local.name
+  environment                      = local.environment
   label_order                      = ["name", "environment"]
   create_log_analytics_workspace   = true
   log_analytics_workspace_sku      = "PerGB2018"
@@ -61,12 +78,15 @@ module "log-analytics" {
   log_analytics_workspace_location = module.resource_group.resource_group_location
 }
 
-
+##----------------------------------------------------------------------------- 
+## Firewall module call. 
+## All firewall related resources will be deployed from this module, i.e. including firewall and firewall rules.
+##-----------------------------------------------------------------------------
 module "firewall" {
   depends_on          = [module.name_specific_subnet]
   source              = "../.."
-  name                = "app"
-  environment         = "test"
+  name                = local.name
+  environment         = local.name
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
   subnet_id           = module.name_specific_subnet.specific_subnet_id[0]

@@ -225,13 +225,10 @@ variable "identity_type" {
   default     = "UserAssigned"
 }
 
-variable "policy_rule_enable" {
-  type    = bool
-  default = false
-}
 variable "policy_rule_enabled" {
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
+  description = "Flah used to control creation of policy rules."
 }
 
 variable "firewall_policy_id" {

@@ -1,4 +1,6 @@
-
+##----------------------------------------------------------------------------- 
+## Labels module callled that will be used for naming and tags.   
+##-----------------------------------------------------------------------------
 module "labels" {
   source      = "clouddrove/labels/azure"
   name        = var.name
@@ -8,7 +10,10 @@ module "labels" {
   repository  = var.repository
 }
 
-
+##----------------------------------------------------------------------------- 
+## Below resource will create Public ip in your environment.
+## This public ip will be attached to firewall.    
+##-----------------------------------------------------------------------------
 resource "azurerm_public_ip" "public_ip" {
   count                = var.enabled && var.firewall_enable ? length(var.public_ip_names) : 0
   name                 = format("%s-%s-ip", module.labels.id, var.public_ip_names[count.index])
@@ -20,6 +25,10 @@ resource "azurerm_public_ip" "public_ip" {
   tags                 = module.labels.tags
 }
 
+##----------------------------------------------------------------------------- 
+## Below resource will deploy firewall in environment. 
+## If you don't have to deploy firewall and only deploy firewall rules than set 'var.firewall_enable' variable to false.   
+##-----------------------------------------------------------------------------
 resource "azurerm_firewall" "firewall" {
   count               = var.enabled && var.firewall_enable ? 1 : 0
   name                = format("%s-firewall", module.labels.id)
@@ -60,6 +69,10 @@ resource "azurerm_firewall" "firewall" {
   }
 }
 
+##----------------------------------------------------------------------------- 
+## Below resource will create firewall policy in your environment. 
+## Firewall policy can only be deployed along firewall. If only firewall rules are to be deployed than firewall policy must be present in azure environment in which rules are to be deployed.   
+##-----------------------------------------------------------------------------
 resource "azurerm_firewall_policy" "policy" {
   count               = var.enabled && var.firewall_enable ? 1 : 0
   name                = format("%s-firewall-FirewallPolicy", module.labels.id)
@@ -75,6 +88,10 @@ resource "azurerm_firewall_policy" "policy" {
   }
 }
 
+##----------------------------------------------------------------------------- 
+## Below resource will deploy a user assigned identity. 
+## This identity will be attached to created firewall policy. So, can be created only when firewall policy is created using this module. 
+##-----------------------------------------------------------------------------
 resource "azurerm_user_assigned_identity" "identity" {
   count               = var.enabled && var.firewall_enable ? 1 : 0
   location            = var.location
@@ -82,10 +99,14 @@ resource "azurerm_user_assigned_identity" "identity" {
   resource_group_name = var.resource_group_name
 }
 
+##----------------------------------------------------------------------------- 
+## Below resource will create firewall policy rule collection group. 
+## All application rules will be there in this group. 
+##-----------------------------------------------------------------------------
 resource "azurerm_firewall_policy_rule_collection_group" "app_policy_rule_collection_group" {
   count              = var.enabled && var.policy_rule_enabled ? 1 : 0
   name               = var.app_policy_collection_group
-  firewall_policy_id = join("", azurerm_firewall_policy.policy.*.id)
+  firewall_policy_id = var.firewall_policy_id == null ? join("", azurerm_firewall_policy.policy.*.id) : var.firewall_policy_id
   priority           = 300
 
   dynamic "application_rule_collection" {
@@ -116,10 +137,14 @@ resource "azurerm_firewall_policy_rule_collection_group" "app_policy_rule_collec
   }
 }
 
+##----------------------------------------------------------------------------- 
+## Below resource will create firewall policy rule collection group. 
+## All network rules will be there in this group. 
+##-----------------------------------------------------------------------------
 resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rule_collection_group" {
   count              = var.enabled && var.policy_rule_enabled ? 1 : 0
   name               = var.net_policy_collection_group
-  firewall_policy_id = join("", azurerm_firewall_policy.policy.*.id)
+  firewall_policy_id = var.firewall_policy_id == null ? join("", azurerm_firewall_policy.policy.*.id) : var.firewall_policy_id
   priority           = 200
 
 
@@ -147,10 +172,14 @@ resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rule_co
   }
 }
 
+##----------------------------------------------------------------------------- 
+## Below resource will create firewall policy rule collection group. 
+## All dnat rules will be there in this group. 
+##-----------------------------------------------------------------------------
 resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rule_collection_group" {
   count              = var.enabled && var.dnat-destination_ip && var.policy_rule_enabled ? 1 : 0
   name               = var.nat_policy_collection_group
-  firewall_policy_id = join("", azurerm_firewall_policy.policy.*.id)
+  firewall_policy_id = var.firewall_policy_id == null ? join("", azurerm_firewall_policy.policy.*.id) : var.firewall_policy_id
   priority           = 100
 
   dynamic "nat_rule_collection" {
@@ -176,101 +205,10 @@ resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rule_collec
   }
 }
 
-resource "azurerm_firewall_policy_rule_collection_group" "app_policy_rules_collection_group" {
-  count              = var.enabled && var.policy_rule_enable ? 1 : 0
-  name               = var.app_policy_collection_group
-  firewall_policy_id = var.firewall_policy_id
-  priority           = 300
-
-  dynamic "application_rule_collection" {
-    for_each = var.application_rule_collection
-
-    content {
-      name     = application_rule_collection.value.name
-      priority = application_rule_collection.value.priority
-      action   = application_rule_collection.value.action
-
-      dynamic "rule" {
-        for_each = application_rule_collection.value.rules
-        content {
-          name              = lookup(rule.value, "name", null)              # string
-          source_addresses  = lookup(rule.value, "source_addresses", null)  # list # currently the IP of staging rule, needs to be changed
-          source_ip_groups  = lookup(rule.value, "source_ip_groups", null)  # list Specifies a list of source IP groups.
-          destination_fqdns = lookup(rule.value, "destination_fqdns", null) # list of destination IP groups.
-          dynamic "protocols" {
-            for_each = rule.value.protocols
-            content {
-              port = lookup(protocols.value, "port", null)
-              type = lookup(protocols.value, "type", null)
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rules_collection_group" {
-  count              = var.enabled && var.policy_rule_enable ? 1 : 0
-  name               = var.net_policy_collection_group
-  firewall_policy_id = var.firewall_policy_id
-  priority           = 200
-
-
-  dynamic "network_rule_collection" {
-    for_each = var.network_rule_collection
-    content {
-      name     = network_rule_collection.value.name
-      priority = network_rule_collection.value.priority
-      action   = network_rule_collection.value.action
-
-      dynamic "rule" {
-        for_each = network_rule_collection.value.rules
-        content {
-          name                  = rule.value.name                                   # string
-          protocols             = rule.value.protocols                              # list
-          destination_ports     = rule.value.destination_ports                      # list - Required
-          source_addresses      = lookup(rule.value, "source_addresses", null)      # list
-          source_ip_groups      = lookup(rule.value, "source_ip_groups", null)      # list Specifies a list of source IP groups.
-          destination_addresses = lookup(rule.value, "destination_addresses", null) # list - ["192.168.1.1", "192.168.1.2"]
-          destination_ip_groups = lookup(rule.value, "destination_ip_groups", null) # list of destination IP groups.
-          destination_fqdns     = lookup(rule.value, "destination_fqdns", null)     # list of destination fqdns groups.
-        }
-      }
-    }
-  }
-}
-
-resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rules_collection_group" {
-  count              = var.enabled && var.dnat-destination_ip && var.policy_rule_enable ? 1 : 0
-  name               = var.nat_policy_collection_group
-  firewall_policy_id = var.firewall_policy_id
-  priority           = 100
-
-  dynamic "nat_rule_collection" {
-    for_each = var.nat_rule_collection
-    content {
-      name     = nat_rule_collection.value.name
-      priority = nat_rule_collection.value.priority
-      action   = "Dnat"
-
-      dynamic "rule" {
-        for_each = nat_rule_collection.value.rules
-        content {
-          name                = rule.value.name                                 # string
-          protocols           = rule.value.protocols                            # list
-          destination_ports   = rule.value.destination_ports                    # list - Required
-          source_addresses    = lookup(rule.value, "source_addresses", null)    # list
-          destination_address = lookup(rule.value, "destination_address", null) # string
-          translated_address  = lookup(rule.value, "translated_address", null)  # list of translated address.
-          translated_port     = lookup(rule.value, "translated_port", null)     # port
-        }
-      }
-    }
-  }
-}
-
-resource "azurerm_monitor_diagnostic_setting" "example" {
+##----------------------------------------------------------------------------- 
+## Below resource will create diagnostic setting for firewall. 
+##-----------------------------------------------------------------------------
+resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
   count                          = var.enabled && var.enable_diagnostic ? 1 : 0
   name                           = format("firewall-diagnostic-log")
   target_resource_id             = azurerm_firewall.firewall[0].id
