@@ -83,14 +83,17 @@ module "log-analytics" {
 ## All firewall related resources will be deployed from this module, i.e. including firewall and firewall rules.
 ##-----------------------------------------------------------------------------
 module "firewall" {
-  depends_on          = [module.name_specific_subnet]
-  source              = "../.."
-  name                = local.name
-  environment         = local.name
-  resource_group_name = module.resource_group.resource_group_name
-  location            = module.resource_group.resource_group_location
-  subnet_id           = module.name_specific_subnet.specific_subnet_id[0]
-  public_ip_names     = ["ingress", "vnet"] // Name of public ips you want to create.
+  depends_on              = [module.name_specific_subnet]
+  source                  = "../.."
+  name                    = local.name
+  environment             = local.environment
+  resource_group_name     = module.resource_group.resource_group_name
+  location                = module.resource_group.resource_group_location
+  subnet_id               = module.name_specific_subnet.specific_subnet_id[0]
+  public_ip_prefix_enable = true
+  prefix_public_ip_names  = ["test-1", "test-2"]
+  public_ip_prefix_length = 31
+  enable_prefix_subnet    = true
 
   # additional_public_ips = [{
   # name = "public-ip_name",
@@ -170,8 +173,8 @@ module "firewall" {
           destination_ports   = ["80"]
           source_addresses    = ["*"]
           translated_port     = "80"
-          translated_address  = "10.1.1.1"                           #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall. Here index 1 indicates 'vnet ip' (from public_ip_names     = ["ingress" , "vnet"])
+          translated_address  = "10.1.1.1"                                  #provide private ip address to translate
+          destination_address = module.firewall.prefix_public_ip_address[1] //Public ip associated with firewall. Here index 1 indicates 'vnet ip' (from public_ip_names     = ["ingress" , "vnet"])
 
         },
         {
@@ -180,8 +183,8 @@ module "firewall" {
           destination_ports   = ["443"]
           source_addresses    = ["*"]
           translated_port     = "443"
-          translated_address  = "10.1.1.1"                           #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall
+          translated_address  = "10.1.1.1"                                  #provide private ip address to translate
+          destination_address = module.firewall.prefix_public_ip_address[1] //Public ip associated with firewall
 
         }
       ]
@@ -197,8 +200,8 @@ module "firewall" {
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["80"]
           translated_port     = "80"
-          translated_address  = "10.1.1.2"                           #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[0] //Public ip associated with firewall.Here index 0 indicates 'ingress ip' (from public_ip_names     = ["ingress" , "vnet"])
+          translated_address  = "10.1.1.2"                                  #provide private ip address to translate
+          destination_address = module.firewall.prefix_public_ip_address[0] //Public ip associated with firewall.Here index 0 indicates 'ingress ip' (from public_ip_names     = ["ingress" , "vnet"])
 
         },
         {
@@ -207,8 +210,8 @@ module "firewall" {
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["443"]
           translated_port     = "443"
-          translated_address  = "10.1.1.2"                           #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[0] //Public ip associated with firewall
+          translated_address  = "10.1.1.2"                                  #provide private ip address to translate
+          destination_address = module.firewall.prefix_public_ip_address[0] //Public ip associated with firewall
         }
       ]
     }

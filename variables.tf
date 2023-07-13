@@ -146,6 +146,12 @@ variable "public_ip_names" {
   description = ""
 }
 
+variable "enable_ip_subnet" {
+  type        = bool
+  default     = true
+  description = "Should subnet id be attached to first public ip name specified in public ip names variable. To be true when there is no individual public ip."
+}
+
 variable "location" {
   type        = string
   default     = ""
@@ -228,11 +234,57 @@ variable "identity_type" {
 variable "policy_rule_enabled" {
   type        = bool
   default     = false
-  description = "Flah used to control creation of policy rules."
+  description = "Flag used to control creation of policy rules."
 }
 
 variable "firewall_policy_id" {
   type        = string
   default     = null
   description = "The ID of the Firewall Policy."
+}
+
+variable "public_ip_prefix_enable" {
+  type        = bool
+  default     = false
+  description = "Flag to control creation of public ip prefix resource."
+}
+
+variable "public_ip_prefix_sku" {
+  type        = string
+  default     = "Standard"
+  description = "SKU for public ip prefix. Default to standard."
+}
+
+variable "public_ip_prefix_ip_version" {
+  type        = string
+  default     = "IPv4"
+  description = "The IP Version to use, IPv6 or IPv4. Changing this forces a new resource to be created. Default is IPv4"
+}
+
+variable "prefix_public_ip_names" {
+  type        = list(string)
+  default     = []
+  description = "Name of prefix public ips."
+}
+
+variable "prefix_public_ip_allocation_method" {
+  type    = string
+  default = "Static"
+}
+
+variable "prefix_public_ip_sku" {
+  type    = string
+  default = "Standard"
+}
+
+variable "public_ip_prefix_length" {
+  type        = number
+  default     = 31
+  description = "Specifies the number of bits of the prefix. The value can be set between 0 (4,294,967,296 addresses) and 31 (2 addresses). Defaults to 28(16 addresses). Changing this forces a new resource to be created."
+}
+
+variable "enable_prefix_subnet" {
+  type        = bool
+  default     = false
+  description = "Should subnet id be attached to first public ip name specified in public ip prefix name varible. To be true when there is no individual public ip."
 }

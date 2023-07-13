@@ -12,6 +12,7 @@ module "labels" {
 
 ##----------------------------------------------------------------------------- 
 ## Below resource will create Public ip in your environment.
+## These are individual public ips i.e. does not belong to prefix list. 
 ## This public ip will be attached to firewall.    
 ##-----------------------------------------------------------------------------
 resource "azurerm_public_ip" "public_ip" {
@@ -24,6 +25,38 @@ resource "azurerm_public_ip" "public_ip" {
   ddos_protection_mode = "VirtualNetworkInherited"
   tags                 = module.labels.tags
 }
+
+##----------------------------------------------------------------------------- 
+## Below resource will create Public ip prefix list in your environment.
+## Prefix Public ip will be allocated from this prefix list.    
+##-----------------------------------------------------------------------------
+resource "azurerm_public_ip_prefix" "pip-prefix" {
+  count               = var.enabled && var.firewall_enable && var.public_ip_prefix_enable ? 1 : 0
+  name                = format("%s-public-ip-prefix", module.labels.id)
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  sku                 = var.public_ip_prefix_sku
+  ip_version          = var.public_ip_prefix_ip_version
+  prefix_length       = var.public_ip_prefix_length
+  tags                = module.labels.tags
+}
+
+##----------------------------------------------------------------------------- 
+## Below resource will create Public ip in your environment.
+## These public ip will be allocated from prefix list created above. 
+##-----------------------------------------------------------------------------
+resource "azurerm_public_ip" "prefix_public_ip" {
+  count                = var.enabled && var.firewall_enable && var.public_ip_prefix_enable ? length(var.prefix_public_ip_names) : 0
+  name                 = format("%s-%s-pip", module.labels.id, var.prefix_public_ip_names[count.index])
+  location             = var.location
+  resource_group_name  = var.resource_group_name
+  allocation_method    = var.prefix_public_ip_allocation_method
+  sku                  = var.prefix_public_ip_sku
+  public_ip_prefix_id  = azurerm_public_ip_prefix.pip-prefix[0].id
+  ddos_protection_mode = "VirtualNetworkInherited"
+  tags                 = module.labels.tags
+}
+
 
 ##----------------------------------------------------------------------------- 
 ## Below resource will deploy firewall in environment. 
@@ -41,22 +74,35 @@ resource "azurerm_firewall" "firewall" {
   tags                = module.labels.tags
   private_ip_ranges   = var.firewall_private_ip_ranges
   dns_servers         = var.dns_servers
-
   dynamic "ip_configuration" {
     for_each = var.public_ip_names
     iterator = it
     content {
-      name                 = format("%s-%s-ipconfig", module.labels.id, it.value)
-      subnet_id            = it.key == 0 ? var.subnet_id : null
+      name = format("%s-%s-ipconfig", module.labels.id, it.value)
+      # var.enable_ip_subnet will be true when individual public ip and prefix public ip both are to be deployed (none of them exist before) or only individual public ip are to be deployed.
+      # var.enable_ip_subnet will be false when prefix_public_ip already exists and there are no individual public ip.
+      subnet_id            = var.enable_ip_subnet ? it.key == 0 ? var.subnet_id : null : null
       public_ip_address_id = azurerm_public_ip.public_ip.*.id[it.key]
     }
   }
+
+  dynamic "ip_configuration" {
+    for_each = var.prefix_public_ip_names
+    iterator = it
+    content {
+      name = format("%s-%s-pipconfig", module.labels.id, it.value)
+      # var.enable_prefix_subnet will only be true when prefix public ips are to be deployed during initial apply and there are no individual public ips to be created.
+      # Individual public ips can be deployed after initial apply and var.enable_ip_subnet variable must be false. 
+      subnet_id            = var.enable_prefix_subnet ? it.key == 0 ? var.subnet_id : null : null
+      public_ip_address_id = azurerm_public_ip.prefix_public_ip.*.id[it.key]
+    }
+  }
+
   dynamic "ip_configuration" {
     for_each = toset(var.additional_public_ips)
 
     content {
-      name = lookup(ip_configuration.value, "name")
-
+      name                 = lookup(ip_configuration.value, "name")
       public_ip_address_id = lookup(ip_configuration.value, "public_ip_address_id")
     }
   }
