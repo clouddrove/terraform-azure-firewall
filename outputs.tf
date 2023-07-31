@@ -26,3 +26,15 @@ output "public_ip_address" {
 output "firewall_policy_id" {
   value = join("", azurerm_firewall_policy.policy.*.id)
 }
+
+output "prefix_public_ip_id" {
+  value = azurerm_public_ip.prefix_public_ip.*.id
+}
+
+output "prefix_public_ip_address" {
+  value = azurerm_public_ip.prefix_public_ip.*.ip_address
+}
+
+output "public_ip_prefix_id" {
+  value = join("", azurerm_public_ip_prefix.pip-prefix.*.id)
+}

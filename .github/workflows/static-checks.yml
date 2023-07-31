@@ -30,7 +30,10 @@ jobs:
           - ${{ needs.versionExtract.outputs.minVersion }}
           - ${{ needs.versionExtract.outputs.maxVersion }}
         directory:
-          - _example/
+          - _example/basic/
+          - _example/complete/
+          - _example/firewall-with-isolated-rules/
+          - _example/firewall-with-public-ip-prefix/
 
     steps:
       - name: Checkout
