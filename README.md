@@ -51,12 +51,6 @@ We have [*fifty plus terraform modules*][terraform_modules]. A few of them are c
 
 This module has a few dependencies: 
 
-- [Terraform 1.x.x](https://learn.hashicorp.com/terraform/getting-started/install.html)
-- [Go](https://golang.org/doc/install)
-- [github.com/stretchr/testify/assert](https://github.com/stretchr/testify)
-- [github.com/gruntwork-io/terratest/modules/terraform](https://github.com/gruntwork-io/terratest)
-
-
 
 
 
@@ -367,6 +361,8 @@ module "firewall-rules" {
 | dnat-destination\_ip | Variable to specify that you have destination ip to attach to policy or not.(Destination ip is public ip that is attached to firewall) | `bool` | `true` | no |
 | dns\_servers | DNS Servers to use with Azure Firewall. Using this also activate DNS Proxy. | `list(string)` | `null` | no |
 | enable\_diagnostic | Set to false to prevent the module from creating the diagnosys setting for the NSG Resource.. | `bool` | `false` | no |
+| enable\_ip\_subnet | Should subnet id be attached to first public ip name specified in public ip names variable. To be true when there is no individual public ip. | `bool` | `true` | no |
+| enable\_prefix\_subnet | Should subnet id be attached to first public ip name specified in public ip prefix name varible. To be true when there is no individual public ip. | `bool` | `false` | no |
 | enabled | Set to false to prevent the module from creating any resources. | `bool` | `true` | no |
 | environment | Environment (e.g. `prod`, `dev`, `staging`). | `string` | `""` | no |
 | eventhub\_authorization\_rule\_id | Eventhub authorization rule id to pass it to destination details of diagnosys setting of NSG. | `string` | `null` | no |
@@ -384,9 +380,16 @@ module "firewall-rules" {
 | nat\_rule\_collection | One or more nat\_rule\_collection blocks as defined below. | `map` | `{}` | no |
 | net\_policy\_collection\_group | (optional) Name of network policy group | `string` | `"DefaultNetworkRuleCollectionGroup"` | no |
 | network\_rule\_collection | One or more network\_rule\_collection blocks as defined below. | `map` | `{}` | no |
-| policy\_rule\_enabled | Flah used to control creation of policy rules. | `bool` | `false` | no |
+| policy\_rule\_enabled | Flag used to control creation of policy rules. | `bool` | `false` | no |
+| prefix\_public\_ip\_allocation\_method | n/a | `string` | `"Static"` | no |
+| prefix\_public\_ip\_names | Name of prefix public ips. | `list(string)` | `[]` | no |
+| prefix\_public\_ip\_sku | n/a | `string` | `"Standard"` | no |
 | public\_ip\_allocation\_method | Defines the allocation method for this IP address. Possible values are Static or Dynamic | `string` | `"Static"` | no |
 | public\_ip\_names | n/a | `list(string)` | `[]` | no |
+| public\_ip\_prefix\_enable | Flag to control creation of public ip prefix resource. | `bool` | `false` | no |
+| public\_ip\_prefix\_ip\_version | The IP Version to use, IPv6 or IPv4. Changing this forces a new resource to be created. Default is IPv4 | `string` | `"IPv4"` | no |
+| public\_ip\_prefix\_length | Specifies the number of bits of the prefix. The value can be set between 0 (4,294,967,296 addresses) and 31 (2 addresses). Defaults to 28(16 addresses). Changing this forces a new resource to be created. | `number` | `31` | no |
+| public\_ip\_prefix\_sku | SKU for public ip prefix. Default to standard. | `string` | `"Standard"` | no |
 | public\_ip\_sku | The SKU of the Public IP. Accepted values are Basic and Standard. Defaults to Basic | `string` | `"Standard"` | no |
 | repository | Terraform current module repo | `string` | `""` | no |
 | resource\_group\_name | A container that holds related resources for an Azure solution | `string` | `""` | no |
@@ -406,9 +409,12 @@ module "firewall-rules" {
 | firewall\_id | Firewall generated id |
 | firewall\_name | Firewall name |
 | firewall\_policy\_id | n/a |
+| prefix\_public\_ip\_address | n/a |
+| prefix\_public\_ip\_id | n/a |
 | private\_ip\_address | Firewall private IP |
 | public\_ip\_address | n/a |
 | public\_ip\_id | n/a |
+| public\_ip\_prefix\_id | n/a |
 
 
 
