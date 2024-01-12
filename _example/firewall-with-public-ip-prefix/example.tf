@@ -32,7 +32,7 @@ module "vnet" {
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
-  address_space       = "10.0.0.0/16"
+  address_spaces      = ["10.0.0.0/16"]
 }
 
 ##----------------------------------------------------------------------------- 
@@ -47,10 +47,10 @@ module "name_specific_subnet" {
   environment          = local.environment
   resource_group_name  = module.resource_group.resource_group_name
   location             = module.resource_group.resource_group_location
-  virtual_network_name = join("", module.vnet.vnet_name)
+  virtual_network_name = module.vnet.vnet_name
   #subnet
   specific_name_subnet  = true
-  specific_subnet_names = "AzureFirewallSubnet"
+  specific_subnet_names = ["AzureFirewallSubnet"]
   subnet_prefixes       = ["10.0.1.0/24"]
   # route_table
   routes = [

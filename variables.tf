@@ -14,7 +14,7 @@ variable "environment" {
 
 variable "repository" {
   type        = string
-  default     = null
+  default     = "https://github.com/clouddrove/terraform-azure-firewall"
   description = "Terraform current module repo"
 }
 
@@ -26,7 +26,7 @@ variable "label_order" {
 
 variable "managedby" {
   type        = string
-  default     = null
+  default     = "CloudDrove"
   description = "ManagedBy, eg ''."
 }
 
@@ -42,11 +42,11 @@ variable "resource_group_name" {
   description = "A container that holds related resources for an Azure solution"
 }
 
-variable "tags" {
-  type        = map(string)
-  default     = {}
-  description = "A map of tags to add to all resources"
-}
+# variable "tags" {
+#   type        = map(string)
+#   default     = {}
+#   description = "A map of tags to add to all resources"
+# }
 
 #Public IP
 
@@ -103,35 +103,35 @@ variable "dns" {
   description = "The DNS block within the firewall policy"
 }
 
-variable "enable_insights" {
-  type        = bool
-  default     = false
-  description = "Whether to enable insights functionality in the Firewall Policy"
-}
+# variable "enable_insights" {
+#   type        = bool
+#   default     = false
+#   description = "Whether to enable insights functionality in the Firewall Policy"
+# }
 
-variable "insights_enabled" {
-  type        = bool
-  default     = false
-  description = "Whether the insights functionality is enabled for this Firewall Policy"
-}
+# variable "insights_enabled" {
+#   type        = bool
+#   default     = false
+#   description = "Whether the insights functionality is enabled for this Firewall Policy"
+# }
 
-variable "default_log_analytics_workspace_id" {
-  type        = string
-  default     = null
-  description = "The ID of the default Log Analytics Workspace for Firewall Policy logs"
-}
+# variable "default_log_analytics_workspace_id" {
+#   type        = string
+#   default     = null
+#   description = "The ID of the default Log Analytics Workspace for Firewall Policy logs"
+# }
 
-variable "insights_retention_in_days" {
-  type        = number
-  default     = 30
-  description = "The log retention period in days for Firewall Policy insights"
-}
+# variable "insights_retention_in_days" {
+#   type        = number
+#   default     = 30
+#   description = "The log retention period in days for Firewall Policy insights"
+# }
 
-variable "log_analytics_workspace_location" {
-  type        = string
-  default     = null
-  description = "The location of the Log Analytics Workspace for Firewall Policy insights"
-}
+# variable "log_analytics_workspace_location" {
+#   type        = string
+#   default     = null
+#   description = "The location of the Log Analytics Workspace for Firewall Policy insights"
+# }
 
 variable "threat_ia" {
   type        = string
@@ -179,16 +179,19 @@ variable "additional_public_ips" {
 }
 
 variable "application_rule_collection" {
+  type        = any
   default     = {}
   description = "One or more application_rule_collection blocks as defined below.."
 }
 
 variable "network_rule_collection" {
+  type        = any
   default     = {}
   description = "One or more network_rule_collection blocks as defined below."
 }
 
 variable "nat_rule_collection" {
+  type        = any
   default     = {}
   description = "One or more nat_rule_collection blocks as defined below."
 }
@@ -244,6 +247,20 @@ variable "virtual_hub" {
   description = "An Azure Virtual WAN Hub with associated security and routing policies configured by Azure Firewall Manager. Use secured virtual hubs to easily create hub-and-spoke and transitive architectures with native security services for traffic governance and protection."
 }
 
+variable "insights" {
+  description = "The insights block"
+  type = list(object({
+    enabled                            = optional(bool, true)
+    default_log_analytics_workspace_id = optional(string)
+    retention_in_days                  = optional(string)
+    log_analytics_workspace = optional(list(object({
+      id                = optional(string)
+      firewall_location = optional(string)
+    })))
+  }))
+  default = null
+}
+
 variable "enable_forced_tunneling" {
   type        = bool
   default     = false
@@ -262,17 +279,17 @@ variable "dnat-destination_ip" {
   description = "Variable to specify that you have destination ip to attach to policy or not.(Destination ip is public ip that is attached to firewall)"
 }
 
-variable "firewall_loc" {
-  type        = string
-  default     = null
-  description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
-}
+# variable "firewall_loc" {
+#   type        = string
+#   default     = null
+#   description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
+# }
 
-variable "log_analytics_id" {
-  type        = string
-  default     = null
-  description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
-}
+# variable "log_analytics_id" {
+#   type        = string
+#   default     = null
+#   description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
+# }
 
 # Diagnosis Settings Enable
 
@@ -318,17 +335,17 @@ variable "log_analytics_workspace_id" {
   description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
 }
 
-variable "retention_policy_enabled" {
-  type        = bool
-  default     = false
-  description = "Set to false to prevent the module from creating retension policy for the diagnosys setting."
-}
+# variable "retention_policy_enabled" {
+#   type        = bool
+#   default     = false
+#   description = "Set to false to prevent the module from creating retension policy for the diagnosys setting."
+# }
 
-variable "days" {
-  type        = number
-  default     = 365
-  description = "Number of days to create retension policies for te diagnosys setting."
-}
+# variable "days" {
+#   type        = number
+#   default     = 365
+#   description = "Number of days to create retension policies for te diagnosys setting."
+# }
 
 variable "firewall_enable" {
   type    = bool

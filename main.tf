@@ -86,7 +86,7 @@ resource "azurerm_firewall" "firewall" {
       # var.enable_ip_subnet will be true when individual public ip and prefix public ip both are to be deployed (none of them exist before) or only individual public ip are to be deployed.
       # var.enable_ip_subnet will be false when prefix_public_ip already exists and there are no individual public ip.
       subnet_id            = var.enable_ip_subnet ? it.key == 0 ? var.subnet_id : null : null
-      public_ip_address_id = azurerm_public_ip.public_ip.*.id[it.key]
+      public_ip_address_id = azurerm_public_ip.public_ip[it.key].id
     }
   }
 
@@ -98,7 +98,7 @@ resource "azurerm_firewall" "firewall" {
       # var.enable_prefix_subnet will only be true when prefix public ips are to be deployed during initial apply and there are no individual public ips to be created.
       # Individual public ips can be deployed after initial apply and var.enable_ip_subnet variable must be false. 
       subnet_id            = var.enable_prefix_subnet ? it.key == 0 ? var.subnet_id : null : null
-      public_ip_address_id = azurerm_public_ip.prefix_public_ip.*.id[it.key]
+      public_ip_address_id = azurerm_public_ip.prefix_public_ip[it.key].id
     }
   }
 
@@ -106,8 +106,8 @@ resource "azurerm_firewall" "firewall" {
     for_each = toset(var.additional_public_ips)
 
     content {
-      name                 = lookup(ip_configuration.value, "name")
-      public_ip_address_id = lookup(ip_configuration.value, "public_ip_address_id")
+      name                 = try(ip_configuration.value, "name")
+      public_ip_address_id = try(ip_configuration.value, "public_ip_address_id")
     }
   }
 
@@ -123,8 +123,8 @@ resource "azurerm_firewall" "firewall" {
     for_each = var.enable_forced_tunneling ? [1] : []
     content {
       name                 = lower("${var.firewall_config.name}-forced-tunnel")
-      subnet_id            = azurerm_subnet.fw-mgnt-snet.0.id
-      public_ip_address_id = azurerm_public_ip.fw-mgnt-pip.0.id
+      subnet_id            = azurerm_subnet.fw-mgnt-snet[0].id
+      public_ip_address_id = azurerm_public_ip.fw-mgnt-pip[0].id
     }
   }
 
@@ -165,17 +165,17 @@ resource "azurerm_firewall_policy" "policy" {
   }
 
   dynamic "insights" {
-    for_each = var.enable_insights ? [1] : []
+    for_each = var.insights != null ? var.insights : []
     content {
-      enabled                            = var.insights_enabled
-      default_log_analytics_workspace_id = var.default_log_analytics_workspace_id
-      retention_in_days                  = var.insights_retention_in_days
+      default_log_analytics_workspace_id = insights.value.default_log_analytics_workspace_id
+      enabled                            = try(insights.value.enabled, true)
+      retention_in_days                  = insights.value.retention_in_days
 
       dynamic "log_analytics_workspace" {
-        for_each = var.log_analytics_workspace_location != null ? [1] : []
+        for_each = insights.value.log_analytics_workspace != null ? [insights.value.log_analytics_workspace] : []
         content {
-          id                = var.log_analytics_id
-          firewall_location = var.firewall_loc
+          id                = log_analytics_workspace.value.id
+          firewall_location = try(log_analytics_workspace.value.firewall_location, var.location)
         }
       }
     }

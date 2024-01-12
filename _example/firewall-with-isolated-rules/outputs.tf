@@ -22,3 +22,6 @@ output "public_ip_id" {
 output "public_ip_address" {
   value = module.firewall.public_ip_address
 }
+output "destination_address_id" {
+  value = module.firewall.public_ip_address[1]
+}
