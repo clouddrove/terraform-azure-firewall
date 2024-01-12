@@ -3,6 +3,7 @@
 ##-----------------------------------------------------------------------------
 module "labels" {
   source      = "clouddrove/labels/azure"
+  version     = "1.0.0"
   name        = var.name
   environment = var.environment
   managedby   = var.managedby
@@ -70,10 +71,13 @@ resource "azurerm_firewall" "firewall" {
   threat_intel_mode   = var.threat_intel_mode
   sku_tier            = var.sku_tier
   sku_name            = var.sku_name
-  firewall_policy_id  = join("", azurerm_firewall_policy.policy.*.id)
+  firewall_policy_id  = azurerm_firewall_policy.policy[0].id
+  zones               = var.zone != null ? [var.zone] : []
   tags                = module.labels.tags
   private_ip_ranges   = var.firewall_private_ip_ranges
   dns_servers         = var.dns_servers
+  dns_proxy_enabled   = var.dns_proxy_enabled
+
   dynamic "ip_configuration" {
     for_each = var.public_ip_names
     iterator = it
@@ -107,6 +111,23 @@ resource "azurerm_firewall" "firewall" {
     }
   }
 
+  dynamic "virtual_hub" {
+    for_each = var.virtual_hub != null ? [var.virtual_hub] : []
+    content {
+      virtual_hub_id  = virtual_hub.value.virtual_hub_id
+      public_ip_count = virtual_hub.value.public_ip_count
+    }
+  }
+
+  dynamic "management_ip_configuration" {
+    for_each = var.enable_forced_tunneling ? [1] : []
+    content {
+      name                 = lower("${var.firewall_config.name}-forced-tunnel")
+      subnet_id            = azurerm_subnet.fw-mgnt-snet.0.id
+      public_ip_address_id = azurerm_public_ip.fw-mgnt-pip.0.id
+    }
+  }
+
   lifecycle {
     ignore_changes = [
       tags,
@@ -125,11 +146,97 @@ resource "azurerm_firewall_policy" "policy" {
   resource_group_name = var.resource_group_name
   location            = var.location
   sku                 = var.sku_policy
+  base_policy_id      = var.base_policy
+
   dynamic "identity" {
     for_each = var.identity_type != null && var.sku_policy == "Premium" && var.sku_tier == "Premium" ? [1] : []
     content {
       type         = var.identity_type
-      identity_ids = var.identity_type == "UserAssigned" ? [join("", azurerm_user_assigned_identity.identity.*.id)] : null
+      identity_ids = var.identity_type == "UserAssigned" ? [azurerm_user_assigned_identity.identity[0].id] : null
+    }
+  }
+
+  dynamic "dns" {
+    for_each = var.dns != null ? var.dns : []
+    content {
+      proxy_enabled = dns.value.proxy_enabled
+      servers       = toset(dns.value.servers)
+    }
+  }
+
+  dynamic "insights" {
+    for_each = var.enable_insights ? [1] : []
+    content {
+      enabled                            = var.insights_enabled
+      default_log_analytics_workspace_id = var.default_log_analytics_workspace_id
+      retention_in_days                  = var.insights_retention_in_days
+
+      dynamic "log_analytics_workspace" {
+        for_each = var.log_analytics_workspace_location != null ? [1] : []
+        content {
+          id                = var.log_analytics_id
+          firewall_location = var.firewall_loc
+        }
+      }
+    }
+  }
+
+  dynamic "threat_intelligence_allowlist" {
+    for_each = var.threat_ia != null ? [var.threat_ia] : []
+    content {
+      ip_addresses = threat_intelligence_allowlist.value.ip_addresses
+      fqdns        = threat_intelligence_allowlist.value.fqdns
+    }
+  }
+
+  dynamic "tls_certificate" {
+    for_each = var.tls_certificate != null ? var.tls_certificate : []
+    content {
+      key_vault_secret_id = tls_certificate.value.key_vault_secret_id
+      name                = tls_certificate.value.name
+    }
+  }
+
+  dynamic "explicit_proxy" {
+    for_each = var.explict_proxy != null ? var.explict_proxy : []
+    content {
+      enabled         = explicit_proxy.value.enabled
+      http_port       = explicit_proxy.value.http_port
+      https_port      = explicit_proxy.value.https_port
+      enable_pac_file = explicit_proxy.value.enable_pac_file
+      pac_file_port   = explicit_proxy.value.pac_file_port
+      pac_file        = explicit_proxy.value.pac_file_sas_url
+    }
+  }
+
+  dynamic "intrusion_detection" {
+    for_each = var.intrusion_detection != null ? var.intrusion_detection : []
+    content {
+      mode           = intrusion_detection.value.mode
+      private_ranges = toset(intrusion_detection.value.private_ranges)
+
+      dynamic "signature_overrides" {
+        for_each = intrusion_detection.value.signature_overrides != null ? intrusion_detection.value.signature_overrides : []
+
+        content {
+          id    = signature_overrides.value.id
+          state = signature_overrides.value.state
+        }
+      }
+
+      dynamic "traffic_bypass" {
+        for_each = intrusion_detection.value.traffic_bypass != null ? intrusion_detection.value.traffic_bypass : []
+        content {
+          name                  = traffic_bypass.value.name
+          protocol              = traffic_bypass.value.protocol
+          description           = traffic_bypass.value.description
+          destination_addresses = traffic_bypass.value.destination_addresses
+          destination_ip_groups = traffic_bypass.value.destination_ip_groups
+          destination_ports     = traffic_bypass.value.destination_ports
+          source_addresses      = traffic_bypass.value.source_addresses
+          source_ip_groups      = traffic_bypass.value.source_ip_groups
+        }
+      }
     }
   }
 }
@@ -152,7 +259,7 @@ resource "azurerm_user_assigned_identity" "identity" {
 resource "azurerm_firewall_policy_rule_collection_group" "app_policy_rule_collection_group" {
   count              = var.enabled && var.policy_rule_enabled ? 1 : 0
   name               = var.app_policy_collection_group
-  firewall_policy_id = var.firewall_policy_id == null ? join("", azurerm_firewall_policy.policy.*.id) : var.firewall_policy_id
+  firewall_policy_id = var.firewall_policy_id == null ? azurerm_firewall_policy.policy[0].id : var.firewall_policy_id
   priority           = 300
 
   dynamic "application_rule_collection" {
@@ -190,7 +297,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "app_policy_rule_collec
 resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rule_collection_group" {
   count              = var.enabled && var.policy_rule_enabled ? 1 : 0
   name               = var.net_policy_collection_group
-  firewall_policy_id = var.firewall_policy_id == null ? join("", azurerm_firewall_policy.policy.*.id) : var.firewall_policy_id
+  firewall_policy_id = var.firewall_policy_id == null ? azurerm_firewall_policy.policy[0].id : var.firewall_policy_id
   priority           = 200
 
 
@@ -225,7 +332,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rule_co
 resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rule_collection_group" {
   count              = var.enabled && var.dnat-destination_ip && var.policy_rule_enabled ? 1 : 0
   name               = var.nat_policy_collection_group
-  firewall_policy_id = var.firewall_policy_id == null ? join("", azurerm_firewall_policy.policy.*.id) : var.firewall_policy_id
+  firewall_policy_id = var.firewall_policy_id == null ? azurerm_firewall_policy.policy[0].id : var.firewall_policy_id
   priority           = 100
 
   dynamic "nat_rule_collection" {
@@ -264,24 +371,20 @@ resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
   log_analytics_workspace_id     = var.log_analytics_workspace_id
   # log_analytics_destination_type = var.log_analytics_destination_type
 
-  log {
-
-    category_group = "AllLogs"
-    enabled        = true
-
-    retention_policy {
-      enabled = var.retention_policy_enabled
-      days    = var.days
+  dynamic "enabled_log" {
+    for_each = var.log_enabled ? ["allLogs"] : []
+    content {
+      category_group = enabled_log.value
     }
   }
-
-  metric {
-    category = "AllMetrics"
-    enabled  = true
-
-    retention_policy {
-      enabled = var.retention_policy_enabled
-      days    = var.days
+  dynamic "metric" {
+    for_each = var.metric_enabled ? ["AllMetrics"] : []
+    content {
+      category = metric.value
+      enabled  = true
     }
+  }
+  lifecycle {
+    ignore_changes = [enabled_log, metric]
   }
 }

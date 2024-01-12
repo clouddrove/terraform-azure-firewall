@@ -27,7 +27,7 @@ module "resource_group" {
 module "vnet" {
   depends_on          = [module.resource_group]
   source              = "clouddrove/vnet/azure"
-  version             = "1.0.3"
+  version             = "1.0.4"
   name                = local.name
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
@@ -42,7 +42,7 @@ module "vnet" {
 module "name_specific_subnet" {
   depends_on           = [module.vnet]
   source               = "clouddrove/subnet/azure"
-  version              = "1.0.2"
+  version              = "1.1.0"
   name                 = local.name
   environment          = local.environment
   resource_group_name  = module.resource_group.resource_group_name
