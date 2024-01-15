@@ -103,36 +103,6 @@ variable "dns" {
   description = "The DNS block within the firewall policy"
 }
 
-# variable "enable_insights" {
-#   type        = bool
-#   default     = false
-#   description = "Whether to enable insights functionality in the Firewall Policy"
-# }
-
-# variable "insights_enabled" {
-#   type        = bool
-#   default     = false
-#   description = "Whether the insights functionality is enabled for this Firewall Policy"
-# }
-
-# variable "default_log_analytics_workspace_id" {
-#   type        = string
-#   default     = null
-#   description = "The ID of the default Log Analytics Workspace for Firewall Policy logs"
-# }
-
-# variable "insights_retention_in_days" {
-#   type        = number
-#   default     = 30
-#   description = "The log retention period in days for Firewall Policy insights"
-# }
-
-# variable "log_analytics_workspace_location" {
-#   type        = string
-#   default     = null
-#   description = "The location of the Log Analytics Workspace for Firewall Policy insights"
-# }
-
 variable "threat_ia" {
   type        = string
   default     = null
@@ -279,18 +249,6 @@ variable "dnat-destination_ip" {
   description = "Variable to specify that you have destination ip to attach to policy or not.(Destination ip is public ip that is attached to firewall)"
 }
 
-# variable "firewall_loc" {
-#   type        = string
-#   default     = null
-#   description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
-# }
-
-# variable "log_analytics_id" {
-#   type        = string
-#   default     = null
-#   description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
-# }
-
 # Diagnosis Settings Enable
 
 variable "enable_diagnostic" {
@@ -334,18 +292,6 @@ variable "log_analytics_workspace_id" {
   default     = null
   description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
 }
-
-# variable "retention_policy_enabled" {
-#   type        = bool
-#   default     = false
-#   description = "Set to false to prevent the module from creating retension policy for the diagnosys setting."
-# }
-
-# variable "days" {
-#   type        = number
-#   default     = 365
-#   description = "Number of days to create retension policies for te diagnosys setting."
-# }
 
 variable "firewall_enable" {
   type    = bool
@@ -459,4 +405,17 @@ variable "intrusion_detection" {
   }))
   default     = null
   description = "The instruction detection block"
+}
+
+variable "pip_logs" {
+  type = object({
+    enabled        = bool
+    category       = optional(list(string))
+    category_group = optional(list(string))
+  })
+
+  default = {
+    enabled        = true
+    category_group = ["AllLogs"]
+  }
 }

@@ -27,6 +27,8 @@ resource "azurerm_public_ip" "public_ip" {
   tags                 = module.labels.tags
 }
 
+
+
 ##----------------------------------------------------------------------------- 
 ## Below resource will create Public ip prefix list in your environment.
 ## Prefix Public ip will be allocated from this prefix list.    
@@ -106,8 +108,8 @@ resource "azurerm_firewall" "firewall" {
     for_each = toset(var.additional_public_ips)
 
     content {
-      name                 = try(ip_configuration.value, "name")
-      public_ip_address_id = try(ip_configuration.value, "public_ip_address_id")
+      name                 = ip_configuration.value.name
+      public_ip_address_id = ip_configuration.value.public_ip_address_id
     }
   }
 
@@ -168,14 +170,14 @@ resource "azurerm_firewall_policy" "policy" {
     for_each = var.insights != null ? var.insights : []
     content {
       default_log_analytics_workspace_id = insights.value.default_log_analytics_workspace_id
-      enabled                            = try(insights.value.enabled, true)
+      enabled                            = insights.value.enabled
       retention_in_days                  = insights.value.retention_in_days
 
       dynamic "log_analytics_workspace" {
         for_each = insights.value.log_analytics_workspace != null ? [insights.value.log_analytics_workspace] : []
         content {
           id                = log_analytics_workspace.value.id
-          firewall_location = try(log_analytics_workspace.value.firewall_location, var.location)
+          firewall_location = var.location
         }
       }
     }
@@ -248,7 +250,7 @@ resource "azurerm_firewall_policy" "policy" {
 resource "azurerm_user_assigned_identity" "identity" {
   count               = var.enabled && var.firewall_enable ? 1 : 0
   location            = var.location
-  name                = format("%s-fw-policy-mid", module.labels.id)
+  name                = format("%s-fw-policy", module.labels.id)
   resource_group_name = var.resource_group_name
 }
 
@@ -386,5 +388,61 @@ resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
   }
   lifecycle {
     ignore_changes = [enabled_log, metric]
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "public_ip_diagnostic-setting" {
+  count                          = var.enabled && var.enable_diagnostic && length(var.public_ip_names) > 0 ? length(var.public_ip_names) : 0
+  name                           = format("public-ip-diagnostic-log")
+  target_resource_id             = azurerm_public_ip.public_ip[count.index].id
+  storage_account_id             = var.storage_account_id
+  eventhub_name                  = var.eventhub_name
+  eventhub_authorization_rule_id = var.eventhub_authorization_rule_id
+  log_analytics_workspace_id     = var.log_analytics_workspace_id
+
+  dynamic "metric" {
+    for_each = var.metric_enabled ? ["AllMetrics"] : []
+    content {
+      category = metric.value
+      enabled  = true
+    }
+  }
+  dynamic "enabled_log" {
+    for_each = var.pip_logs.enabled ? var.pip_logs.category != null ? var.pip_logs.category : var.pip_logs.category_group : []
+    content {
+      category       = var.pip_logs.category != null ? enabled_log.value : null
+      category_group = var.pip_logs.category == null ? enabled_log.value : null
+    }
+  }
+  lifecycle {
+    ignore_changes = [log_analytics_destination_type]
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "pip_prefix_diagnostic-setting" {
+  count                          = var.enabled && var.enable_diagnostic && length(var.prefix_public_ip_names) > 0 ? length(var.prefix_public_ip_names) : 0
+  name                           = format("public-ip-diagnostic-log")
+  target_resource_id             = azurerm_public_ip.prefix_public_ip[count.index].id
+  storage_account_id             = var.storage_account_id
+  eventhub_name                  = var.eventhub_name
+  eventhub_authorization_rule_id = var.eventhub_authorization_rule_id
+  log_analytics_workspace_id     = var.log_analytics_workspace_id
+
+  dynamic "metric" {
+    for_each = var.metric_enabled ? ["AllMetrics"] : []
+    content {
+      category = metric.value
+      enabled  = true
+    }
+  }
+  dynamic "enabled_log" {
+    for_each = var.pip_logs.enabled ? var.pip_logs.category != null ? var.pip_logs.category : var.pip_logs.category_group : []
+    content {
+      category       = var.pip_logs.category != null ? enabled_log.value : null
+      category_group = var.pip_logs.category == null ? enabled_log.value : null
+    }
+  }
+  lifecycle {
+    ignore_changes = [log_analytics_destination_type]
   }
 }

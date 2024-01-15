@@ -101,7 +101,7 @@ module "firewall" {
   #   } ]
   firewall_enable            = true
   policy_rule_enabled        = true
-  enable_diagnostic          = false
+  enable_diagnostic          = true
   log_analytics_workspace_id = module.log-analytics.workspace_id
 
   application_rule_collection = [
