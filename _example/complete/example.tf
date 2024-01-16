@@ -170,8 +170,8 @@ module "firewall" {
           destination_ports   = ["80"]
           source_addresses    = ["*"]
           translated_port     = "80"
-          translated_address  = "10.1.1.1"                        #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[1]  //Public ip associated with firewall. Here index 1 indicates 'vnet ip' (from public_ip_names     = ["ingress" , "vnet"])
+          translated_address  = "10.1.1.1"                           #provide private ip address to translate
+          destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall. Here index 1 indicates 'vnet ip' (from public_ip_names     = ["ingress" , "vnet"])
 
         },
         {
@@ -180,8 +180,8 @@ module "firewall" {
           destination_ports   = ["443"]
           source_addresses    = ["*"]
           translated_port     = "443"
-          translated_address  = "10.1.1.1"                        #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[1]  //Public ip associated with firewall
+          translated_address  = "10.1.1.1"                           #provide private ip address to translate
+          destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall
 
         }
       ]
@@ -197,8 +197,8 @@ module "firewall" {
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["80"]
           translated_port     = "80"
-          translated_address  = "10.1.1.2"                        #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[0]  //Public ip associated with firewall.Here index 0 indicates 'ingress ip' (from public_ip_names     = ["ingress" , "vnet"])
+          translated_address  = "10.1.1.2"                           #provide private ip address to translate
+          destination_address = module.firewall.public_ip_address[0] //Public ip associated with firewall.Here index 0 indicates 'ingress ip' (from public_ip_names     = ["ingress" , "vnet"])
 
         },
         {
@@ -207,8 +207,8 @@ module "firewall" {
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["443"]
           translated_port     = "443"
-          translated_address  = "10.1.1.2"                        #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[0]  //Public ip associated with firewall
+          translated_address  = "10.1.1.2"                           #provide private ip address to translate
+          destination_address = module.firewall.public_ip_address[0] //Public ip associated with firewall
         }
       ]
     }
