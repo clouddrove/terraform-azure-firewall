@@ -2,19 +2,19 @@
 #Description : Terraform label module variables.
 variable "name" {
   type        = string
-  default     = ""
+  default     = null
   description = "Name  (e.g. `app` or `cluster`)."
 }
 
 variable "environment" {
   type        = string
-  default     = ""
+  default     = null
   description = "Environment (e.g. `prod`, `dev`, `staging`)."
 }
 
 variable "repository" {
   type        = string
-  default     = ""
+  default     = "https://github.com/clouddrove/terraform-azure-firewall"
   description = "Terraform current module repo"
 }
 
@@ -26,45 +26,48 @@ variable "label_order" {
 
 variable "managedby" {
   type        = string
-  default     = ""
+  default     = "CloudDrove"
   description = "ManagedBy, eg ''."
 }
 
 variable "enabled" {
   type        = bool
-  description = "Set to false to prevent the module from creating any resources."
   default     = true
+  description = "Set to false to prevent the module from creating any resources."
 }
 
 variable "resource_group_name" {
+  type        = string
+  default     = null
   description = "A container that holds related resources for an Azure solution"
-  default     = ""
 }
 
-variable "tags" {
-  description = "A map of tags to add to all resources"
-  type        = map(string)
-  default     = {}
-}
+# variable "tags" {
+#   type        = map(string)
+#   default     = {}
+#   description = "A map of tags to add to all resources"
+# }
 
 #Public IP
 
 variable "public_ip_allocation_method" {
-  description = "Defines the allocation method for this IP address. Possible values are Static or Dynamic"
+  type        = string
   default     = "Static"
+  description = "Defines the allocation method for this IP address. Possible values are Static or Dynamic"
 }
 
 variable "public_ip_sku" {
-  description = "The SKU of the Public IP. Accepted values are Basic and Standard. Defaults to Basic"
+  type        = string
   default     = "Standard"
+  description = "The SKU of the Public IP. Accepted values are Basic and Standard. Defaults to Basic"
 }
 
 #firewall
 
 variable "threat_intel_mode" {
-  description = "(Optional) The operation mode for threat intelligence-based filtering. Possible values are: Off, Alert, Deny. Defaults to Alert."
-  default     = "Alert"
   type        = string
+  default     = "Alert"
+  description = "(Optional) The operation mode for threat intelligence-based filtering. Possible values are: Off, Alert, Deny. Defaults to Alert."
 
   validation {
     condition     = contains(["Off", "Alert", "Deny"], var.threat_intel_mode)
@@ -73,22 +76,43 @@ variable "threat_intel_mode" {
 }
 
 variable "sku_tier" {
-  description = "Specifies the firewall sku tier"
-  default     = "Standard"
   type        = string
+  default     = "Standard"
+  description = "Specifies the firewall sku tier"
 }
 
 variable "sku_policy" {
-  description = "Specifies the firewall-policy sku"
   default     = "Standard"
   type        = string
+  description = "Specifies the firewall-policy sku"
+}
+
+variable "base_policy" {
+  type        = string
+  default     = null
+  description = "Specifies the firewall-base-policy-id"
+}
+
+
+variable "dns" {
+  type = list(object({
+    proxy_enabled = optional(bool, false)
+    servers       = set(string)
+  }))
+  default     = null
+  description = "The DNS block within the firewall policy"
+}
+
+variable "threat_ia" {
+  type        = string
+  default     = null
+  description = "The location of the Log Analytics Workspace for Firewall Policy insights"
 }
 
 variable "sku_name" {
   type        = string
   default     = "AZFW_VNet"
   description = "(optional) describe your variable"
-
 }
 
 variable "subnet_id" {
@@ -113,7 +137,6 @@ variable "app_policy_collection_group" {
   type        = string
   default     = "DefaultApplicationRuleCollectionGroup"
   description = "(optional) Name of app policy group"
-
 }
 
 variable "additional_public_ips" {
@@ -126,16 +149,19 @@ variable "additional_public_ips" {
 }
 
 variable "application_rule_collection" {
+  type        = any
   default     = {}
   description = "One or more application_rule_collection blocks as defined below.."
 }
 
 variable "network_rule_collection" {
+  type        = any
   default     = {}
   description = "One or more network_rule_collection blocks as defined below."
 }
 
 variable "nat_rule_collection" {
+  type        = any
   default     = {}
   description = "One or more nat_rule_collection blocks as defined below."
 }
@@ -154,8 +180,14 @@ variable "enable_ip_subnet" {
 
 variable "location" {
   type        = string
-  default     = ""
+  default     = null
   description = "The location/region where the virtual network is created. Changing this forces a new resource to be created."
+}
+
+variable "zone" {
+  type        = string
+  default     = null
+  description = "The Zone for the resources (e.g., `1`, `2`, `3`)."
 }
 
 variable "firewall_private_ip_ranges" {
@@ -170,10 +202,51 @@ variable "dns_servers" {
   default     = null
 }
 
+variable "dns_proxy_enabled" {
+  type        = bool
+  default     = false
+  description = "Flag to enable DNS Proxy on the firewall."
+}
+
+variable "virtual_hub" {
+  type = object({
+    virtual_hub_id  = string
+    public_ip_count = number
+  })
+  default     = null
+  description = "An Azure Virtual WAN Hub with associated security and routing policies configured by Azure Firewall Manager. Use secured virtual hubs to easily create hub-and-spoke and transitive architectures with native security services for traffic governance and protection."
+}
+
+variable "insights" {
+  description = "The insights block"
+  type = list(object({
+    enabled                            = optional(bool, true)
+    default_log_analytics_workspace_id = optional(string)
+    retention_in_days                  = optional(string)
+    log_analytics_workspace = optional(list(object({
+      id                = optional(string)
+      firewall_location = optional(string)
+    })))
+  }))
+  default = null
+}
+
+variable "enable_forced_tunneling" {
+  type        = bool
+  default     = false
+  description = "Route all Internet-bound traffic to a designated next hop instead of going directly to the Internet"
+}
+
+variable "firewall_config" {
+  type        = string
+  default     = null
+  description = "Manages an Azure Firewall configuration"
+}
+
 variable "dnat-destination_ip" {
-  description = "Variable to specify that you have destination ip to attach to policy or not.(Destination ip is public ip that is attached to firewall)"
   type        = bool
   default     = true
+  description = "Variable to specify that you have destination ip to attach to policy or not.(Destination ip is public ip that is attached to firewall)"
 }
 
 # Diagnosis Settings Enable
@@ -182,6 +255,18 @@ variable "enable_diagnostic" {
   type        = bool
   default     = false
   description = "Set to false to prevent the module from creating the diagnosys setting for the NSG Resource.."
+}
+
+variable "metric_enabled" {
+  type        = bool
+  default     = true
+  description = "Is this Diagnostic Metric enabled? Defaults to True."
+}
+
+variable "log_enabled" {
+  type        = string
+  default     = true
+  description = " Is this Diagnostic Log enabled? Defaults to true."
 }
 
 variable "storage_account_id" {
@@ -206,18 +291,6 @@ variable "log_analytics_workspace_id" {
   type        = string
   default     = null
   description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
-}
-
-variable "retention_policy_enabled" {
-  type        = bool
-  default     = false
-  description = "Set to false to prevent the module from creating retension policy for the diagnosys setting."
-}
-
-variable "days" {
-  type        = number
-  default     = 365
-  description = "Number of days to create retension policies for te diagnosys setting."
 }
 
 variable "firewall_enable" {
@@ -287,4 +360,62 @@ variable "enable_prefix_subnet" {
   type        = bool
   default     = false
   description = "Should subnet id be attached to first public ip name specified in public ip prefix name varible. To be true when there is no individual public ip."
+}
+
+variable "tls_certificate" {
+  type = list(object({
+    key_vault_secret_id = string
+    name                = string
+  }))
+  default     = null
+  description = "The tls_certificate block within the firewall policy"
+}
+
+variable "explict_proxy" {
+  type = list(object({
+    enabled          = optional(bool, true)
+    http_port        = optional(number)
+    https_port       = optional(number)
+    enable_pac_file  = optional(bool)
+    pac_file_port    = optional(number)
+    pac_file_sas_url = optional(string)
+  }))
+  default     = null
+  description = "The explict proxy block within the firewall policy"
+}
+
+variable "intrusion_detection" {
+  type = list(object({
+    mode           = optional(string, "Alert")
+    private_ranges = optional(set(string))
+    signature_overrides = optional(list(object({
+      id    = optional(string)
+      state = optional(string)
+    })))
+    traffic_bypass = optional(list(object({
+      name                  = optional(string)
+      protocol              = optional(string)
+      description           = optional(string)
+      destination_addresses = optional(list(string))
+      destination_ip_groups = optional(list(string))
+      destination_ports     = optional(list(string))
+      source_addresses      = optional(list(string))
+      source_ip_groups      = optional(list(string))
+    })))
+  }))
+  default     = null
+  description = "The instruction detection block"
+}
+
+variable "pip_logs" {
+  type = object({
+    enabled        = bool
+    category       = optional(list(string))
+    category_group = optional(list(string))
+  })
+
+  default = {
+    enabled        = true
+    category_group = ["AllLogs"]
+  }
 }

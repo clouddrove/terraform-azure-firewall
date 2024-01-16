@@ -1,10 +1,10 @@
 output "firewall_id" {
   description = "Firewall generated id"
-  value       = join("", azurerm_firewall.firewall.*.id)
+  value       = var.enabled && var.firewall_enable ? azurerm_firewall.firewall[0].id : null
 }
 
 output "firewall_name" {
-  value       = join("", azurerm_firewall.firewall.*.name)
+  value       = var.enabled && var.firewall_enable ? azurerm_firewall.firewall[0].name : null
   description = "Firewall name"
 
 }
@@ -16,25 +16,25 @@ output "private_ip_address" {
 }
 
 output "public_ip_id" {
-  value = azurerm_public_ip.public_ip.*.id
+  value = azurerm_public_ip.public_ip[*].id
 }
 
 output "public_ip_address" {
-  value = azurerm_public_ip.public_ip.*.ip_address
+  value = azurerm_public_ip.public_ip[*].ip_address
 }
 
 output "firewall_policy_id" {
-  value = join("", azurerm_firewall_policy.policy.*.id)
+  value = var.enabled && var.firewall_enable ? azurerm_firewall_policy.policy[0].id : null
 }
 
 output "prefix_public_ip_id" {
-  value = azurerm_public_ip.prefix_public_ip.*.id
+  value = azurerm_public_ip.prefix_public_ip[*].id
 }
 
 output "prefix_public_ip_address" {
-  value = azurerm_public_ip.prefix_public_ip.*.ip_address
+  value = azurerm_public_ip.prefix_public_ip[*].ip_address
 }
 
 output "public_ip_prefix_id" {
-  value = join("", azurerm_public_ip_prefix.pip-prefix.*.id)
+  value = azurerm_public_ip_prefix.pip-prefix[*].id
 }
