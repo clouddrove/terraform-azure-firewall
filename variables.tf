@@ -216,14 +216,14 @@ variable "retention_policy_enabled" {
 
 variable "log_category" {
   type        = list(string)
-  default     = ["allLogs" ]
+  default     = ["allLogs"]
   description = "Categories of logs to be recorded in diagnostic setting. Acceptable values are AzureFirewallApplicationRule ,AzureFirewallNetworkRule , AzureFirewallDnsProxy "
 }
 
 variable "metric_enabled" {
   type        = bool
   default     = true
-  description = "Whether metric diagnonsis should be enable in diagnostic settings for flexible Mysql."
+  description = "Whether metric diagnonsis should be enable in diagnostic settings for firewall."
 }
 
 variable "days" {
