@@ -264,24 +264,18 @@ resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
   log_analytics_workspace_id     = var.log_analytics_workspace_id
   # log_analytics_destination_type = var.log_analytics_destination_type
 
-  log {
-
-    category_group = "AllLogs"
-    enabled        = true
-
-    retention_policy {
-      enabled = var.retention_policy_enabled
-      days    = var.days
+  dynamic "enabled_log" {
+    for_each = var.log_category
+    content {
+      category = enabled_log.value
     }
+
   }
-
-  metric {
-    category = "AllMetrics"
-    enabled  = true
-
-    retention_policy {
-      enabled = var.retention_policy_enabled
-      days    = var.days
+  dynamic "metric" {
+    for_each = var.metric_enabled ? ["AllMetrics"] : []
+    content {
+      category = metric.value
+      enabled  = true
     }
   }
 }
