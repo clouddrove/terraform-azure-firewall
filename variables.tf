@@ -214,6 +214,18 @@ variable "retention_policy_enabled" {
   description = "Set to false to prevent the module from creating retension policy for the diagnosys setting."
 }
 
+variable "log_category" {
+  type        = list(string)
+  default     = ["allLogs" ]
+  description = "Categories of logs to be recorded in diagnostic setting. Acceptable values are AzureFirewallApplicationRule ,AzureFirewallNetworkRule , AzureFirewallDnsProxy "
+}
+
+variable "metric_enabled" {
+  type        = bool
+  default     = true
+  description = "Whether metric diagnonsis should be enable in diagnostic settings for flexible Mysql."
+}
+
 variable "days" {
   type        = number
   default     = 365
@@ -224,6 +236,7 @@ variable "firewall_enable" {
   type    = bool
   default = false
 }
+
 
 variable "identity_type" {
   description = "Specifies the type of Managed Service Identity that should be configured on this Storage Account. Possible values are `SystemAssigned`, `UserAssigned`, `SystemAssigned, UserAssigned` (to enable both)."
