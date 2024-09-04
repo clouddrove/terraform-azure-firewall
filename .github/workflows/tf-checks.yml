@@ -1,0 +1,28 @@
+
+name: tf-checks
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  basic-example:
+    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.8
+    with:
+      working_directory: './examples/basic/'
+
+  complete-example:
+    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.8
+    with:
+      working_directory: './examples/complete/'
+
+  firewall-with-isolated-rules:
+    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.8
+    with:
+      working_directory: './examples/firewall-with-isolated-rules/'
+
+  firewall-with-public-ip-prefix:
+  uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.8
+    with:
+      working_directory: './examples/firewall-with-public-ip-prefix/'
+
