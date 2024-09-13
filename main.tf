@@ -262,17 +262,17 @@ resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
   eventhub_name                  = var.eventhub_name
   eventhub_authorization_rule_id = var.eventhub_authorization_rule_id
   log_analytics_workspace_id     = var.log_analytics_workspace_id
-  # log_analytics_destination_type = var.log_analytics_destination_type
 
-  log {
+  enabled_log {
+    category = "FirewallApplicationRule"
+  }
 
-    category_group = "AllLogs"
-    enabled        = true
+  enabled_log {
+    category = "FirewallNetworkRule"
+  }
 
-    retention_policy {
-      enabled = var.retention_policy_enabled
-      days    = var.days
-    }
+  enabled_log {
+    category = "FirewallThreatIntel"
   }
 
   metric {
