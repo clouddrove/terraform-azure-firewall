@@ -265,15 +265,15 @@ resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
 
   enabled_log {
     category = var.firewall_application_rule_category
-}
+  }
 
   enabled_log {
     category = var.firewall_network_rule_category
-}
+  }
 
   enabled_log {
     category = var.firewall_threat_intel_category
-}
+  }
 
   metric {
     category = var.metric_category
@@ -282,7 +282,7 @@ resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
     retention_policy {
       enabled = var.retention_policy_enabled
       days    = var.retention_days
+    }
   }
-}
 
 }
