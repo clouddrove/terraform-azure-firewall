@@ -1,6 +1,6 @@
 provider "azurerm" {
   features {}
-  subscription_id                 = "068245d4-3c94-42fe-9c4d-9e5e1cabc60c"
+  subscription_id = "068245d4-3c94-42fe-9c4d-9e5e1cabc60c"
 }
 
 locals {
@@ -28,7 +28,7 @@ module "resource_group" {
 module "vnet" {
   depends_on          = [module.resource_group]
   source              = "clouddrove/vnet/azure"
-  version             = "1.0.3"
+  version             = "1.0.4"
   name                = local.name
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
@@ -51,7 +51,7 @@ module "name_specific_subnet" {
   virtual_network_name = join("", module.vnet.vnet_name)
   #subnet
   specific_name_subnet  = true
-  specific_subnet_names = ["AzureFirewallSubnet"]  # Corrected to be a list of strings
+  specific_subnet_names = ["AzureFirewallSubnet"] # Corrected to be a list of strings
   subnet_prefixes       = ["10.0.1.0/24"]
   # route_table
   routes = [
