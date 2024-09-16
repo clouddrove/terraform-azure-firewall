@@ -284,3 +284,5 @@ resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
       days    = var.retention_days
   }
 }
+
+}

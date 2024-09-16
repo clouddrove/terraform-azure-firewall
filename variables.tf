@@ -208,11 +208,6 @@ variable "log_analytics_workspace_id" {
   description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
 }
 
-variable "retention_policy_enabled" {
-  type        = bool
-  default     = false
-  description = "Set to false to prevent the module from creating retension policy for the diagnosys setting."
-}
 
 variable "days" {
   type        = number
