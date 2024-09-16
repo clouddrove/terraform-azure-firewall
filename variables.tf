@@ -288,3 +288,46 @@ variable "enable_prefix_subnet" {
   default     = false
   description = "Should subnet id be attached to first public ip name specified in public ip prefix name varible. To be true when there is no individual public ip."
 }
+
+variable "firewall_application_rule_category" {
+  description = "Category for Firewall Application Rule log"
+  type        = string
+  default     = "FirewallApplicationRule"
+}
+
+variable "firewall_network_rule_category" {
+  description = "Category for Firewall Network Rule log"
+  type        = string
+  default     = "FirewallNetworkRule"
+}
+
+variable "firewall_threat_intel_category" {
+  description = "Category for Firewall Threat Intelligence log"
+  type        = string
+  default     = "FirewallThreatIntel"
+}
+
+variable "metric_category" {
+  description = "Category for metrics"
+  type        = string
+  default     = "AllMetrics"
+}
+
+variable "metric_enabled" {
+  description = "Enable or disable metrics"
+  type        = bool
+  default     = true
+}
+
+variable "retention_policy_enabled" {
+  description = "Enable or disable retention policy"
+  type        = bool
+  default     = false
+}
+
+variable "retention_days" {
+  description = "Number of days to retain logs"
+  type        = number
+  default     = 30
+}
+

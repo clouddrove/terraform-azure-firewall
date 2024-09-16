@@ -264,24 +264,23 @@ resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
   log_analytics_workspace_id     = var.log_analytics_workspace_id
 
   enabled_log {
-    category = "FirewallApplicationRule"
-  }
+    category = var.firewall_application_rule_category
+}
 
   enabled_log {
-    category = "FirewallNetworkRule"
-  }
+    category = var.firewall_network_rule_category
+}
 
   enabled_log {
-    category = "FirewallThreatIntel"
-  }
+    category = var.firewall_threat_intel_category
+}
 
   metric {
-    category = "AllMetrics"
-    enabled  = true
+    category = var.metric_category
+    enabled  = var.metric_enabled
 
     retention_policy {
       enabled = var.retention_policy_enabled
-      days    = var.days
-    }
+      days    = var.retention_days
   }
 }
