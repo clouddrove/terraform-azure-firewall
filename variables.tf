@@ -130,47 +130,25 @@ variable "additional_public_ips" {
 }
 
 variable "application_rule_collection" {
-  description = "One or more application_rule_collection blocks."
-  type = list(object({
-    name = string
-    rules = list(object({
-      name     = string
-      action   = string
-      protocol = string
-      ports    = list(string)
-    }))
-  }))
-  default = []
+  description = "One or more application_rule_collection blocks as defined below."
+  type        = list(object({ ... }))
+  default     = []
 }
 
 
 variable "network_rule_collection" {
-  description = "One or more network_rule_collection blocks."
-  type = list(object({
-    name = string
-    rules = list(object({
-      name     = string
-      action   = string
-      protocol = string
-      ports    = list(string)
-    }))
-  }))
-  default = []
+  description = "One or more network_rule_collection blocks as defined below."
+  type        = list(object({ ... }))
+  default     = []
 }
 
+
 variable "nat_rule_collection" {
-  description = "One or more nat_rule_collection blocks."
-  type = list(object({
-    name = string
-    rules = list(object({
-      name     = string
-      action   = string
-      protocol = string
-      ports    = list(string)
-    }))
-  }))
-  default = []
+  description = "One or more nat_rule_collection blocks as defined below."
+  type        = list(object({ ... }))
+  default     = []
 }
+
 
 variable "public_ip_names" {
   type        = list(string)
