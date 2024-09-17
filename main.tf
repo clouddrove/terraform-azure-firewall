@@ -264,7 +264,7 @@ resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
   log_analytics_workspace_id     = var.log_analytics_workspace_id
 
   enabled_log {
-    category_group = "AllLogs"
+    category_group = var.log_category_group
     retention_policy {
       enabled = var.retention_policy_enabled
       days    = var.days
