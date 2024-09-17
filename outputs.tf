@@ -1,6 +1,6 @@
 output "firewall_id" {
   description = "Firewall generated id"
-  value       = join("", azurerm_firewall.firewall.*.id)
+  value       = azurerm_firewall.firewall[0].id
 }
 
 output "firewall_name" {

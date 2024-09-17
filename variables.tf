@@ -53,11 +53,13 @@ variable "tags" {
 
 variable "public_ip_allocation_method" {
   description = "Defines the allocation method for this IP address. Possible values are Static or Dynamic"
+  type        = string
   default     = "Static"
 }
 
 variable "public_ip_sku" {
   description = "The SKU of the Public IP. Accepted values are Basic and Standard. Defaults to Basic"
+  type        = string
   default     = "Standard"
 }
 
@@ -128,18 +130,46 @@ variable "additional_public_ips" {
 }
 
 variable "application_rule_collection" {
-  default     = {}
-  description = "One or more application_rule_collection blocks as defined below.."
+  description = "One or more application_rule_collection blocks."
+  type = list(object({
+    name = string
+    rules = list(object({
+      name     = string
+      action   = string
+      protocol = string
+      ports    = list(string)
+    }))
+  }))
+  default = []
 }
 
+
 variable "network_rule_collection" {
-  default     = {}
-  description = "One or more network_rule_collection blocks as defined below."
+  description = "One or more network_rule_collection blocks."
+  type = list(object({
+    name = string
+    rules = list(object({
+      name     = string
+      action   = string
+      protocol = string
+      ports    = list(string)
+    }))
+  }))
+  default = []
 }
 
 variable "nat_rule_collection" {
-  default     = {}
-  description = "One or more nat_rule_collection blocks as defined below."
+  description = "One or more nat_rule_collection blocks."
+  type = list(object({
+    name = string
+    rules = list(object({
+      name     = string
+      action   = string
+      protocol = string
+      ports    = list(string)
+    }))
+  }))
+  default = []
 }
 
 variable "public_ip_names" {
@@ -329,7 +359,8 @@ variable "retention_days" {
 }
 
 variable "log_category_group" {
-  description = "log category group for collecting matrics"
+  description = "log category group for collecting metrics"
+  type        = string
   default     = "AllLogs"
 }
 
