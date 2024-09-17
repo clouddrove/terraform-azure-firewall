@@ -263,7 +263,7 @@ resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
   eventhub_authorization_rule_id = var.eventhub_authorization_rule_id
   log_analytics_workspace_id     = var.log_analytics_workspace_id
 
-   enabled_log {
+  enabled_log {
     category_group = "AllLogs"
     retention_policy {
       enabled = var.retention_policy_enabled
