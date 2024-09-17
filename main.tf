@@ -70,7 +70,7 @@ resource "azurerm_firewall" "firewall" {
   threat_intel_mode   = var.threat_intel_mode
   sku_tier            = var.sku_tier
   sku_name            = var.sku_name
-  firewall_policy_id  = join("", azurerm_firewall_policy.policy.*.id)
+  firewall_policy_id = azurerm_firewall_policy.policy[0].id
   tags                = module.labels.tags
   private_ip_ranges   = var.firewall_private_ip_ranges
   dns_servers         = var.dns_servers
@@ -82,7 +82,7 @@ resource "azurerm_firewall" "firewall" {
       # var.enable_ip_subnet will be true when individual public ip and prefix public ip both are to be deployed (none of them exist before) or only individual public ip are to be deployed.
       # var.enable_ip_subnet will be false when prefix_public_ip already exists and there are no individual public ip.
       subnet_id            = var.enable_ip_subnet ? it.key == 0 ? var.subnet_id : null : null
-      public_ip_address_id = azurerm_public_ip.public_ip.*.id[it.key]
+      public_ip_address_id = azurerm_public_ip.public_ip[it.key].id
     }
   }
 
@@ -94,7 +94,7 @@ resource "azurerm_firewall" "firewall" {
       # var.enable_prefix_subnet will only be true when prefix public ips are to be deployed during initial apply and there are no individual public ips to be created.
       # Individual public ips can be deployed after initial apply and var.enable_ip_subnet variable must be false. 
       subnet_id            = var.enable_prefix_subnet ? it.key == 0 ? var.subnet_id : null : null
-      public_ip_address_id = azurerm_public_ip.prefix_public_ip.*.id[it.key]
+      public_ip_address_id = azurerm_public_ip.prefix_public_ip[it.key].id
     }
   }
 
@@ -129,7 +129,7 @@ resource "azurerm_firewall_policy" "policy" {
     for_each = var.identity_type != null && var.sku_policy == "Premium" && var.sku_tier == "Premium" ? [1] : []
     content {
       type         = var.identity_type
-      identity_ids = var.identity_type == "UserAssigned" ? [join("", azurerm_user_assigned_identity.identity.*.id)] : null
+      identity_ids = var.identity_type == "UserAssigned" ? [azurerm_user_assigned_identity.identity[0].id] : null
     }
   }
 }
