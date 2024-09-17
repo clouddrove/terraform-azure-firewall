@@ -152,7 +152,7 @@ resource "azurerm_user_assigned_identity" "identity" {
 resource "azurerm_firewall_policy_rule_collection_group" "app_policy_rule_collection_group" {
   count              = var.enabled && var.policy_rule_enabled ? 1 : 0
   name               = var.app_policy_collection_group
-  firewall_policy_id = var.firewall_policy_id == null ? join("", azurerm_firewall_policy.policy.*.id) : var.firewall_policy_id
+  firewall_policy_id = var.firewall_policy_id == null ? azurerm_firewall_policy.policy[0].id : var.firewall_policy_id
   priority           = 300
 
   dynamic "application_rule_collection" {
@@ -190,7 +190,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "app_policy_rule_collec
 resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rule_collection_group" {
   count              = var.enabled && var.policy_rule_enabled ? 1 : 0
   name               = var.net_policy_collection_group
-  firewall_policy_id = var.firewall_policy_id == null ? join("", azurerm_firewall_policy.policy.*.id) : var.firewall_policy_id
+  firewall_policy_id = var.firewall_policy_id == null ? azurerm_firewall_policy.policy[0].id : var.firewall_policy_id
   priority           = 200
 
 
