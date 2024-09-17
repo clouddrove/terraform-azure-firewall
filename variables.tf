@@ -37,24 +37,22 @@ variable "enabled" {
 }
 
 variable "resource_group_name" {
+  type        = string
   description = "A container that holds related resources for an Azure solution"
   default     = ""
 }
 
-variable "tags" {
-  description = "A map of tags to add to all resources"
-  type        = map(string)
-  default     = {}
-}
 
 #Public IP
 
 variable "public_ip_allocation_method" {
+  type        = string
   description = "Defines the allocation method for this IP address. Possible values are Static or Dynamic"
   default     = "Static"
 }
 
 variable "public_ip_sku" {
+  type        = string
   description = "The SKU of the Public IP. Accepted values are Basic and Standard. Defaults to Basic"
   default     = "Standard"
 }
@@ -88,7 +86,6 @@ variable "sku_name" {
   type        = string
   default     = "AZFW_VNet"
   description = "(optional) describe your variable"
-
 }
 
 variable "subnet_id" {
@@ -113,7 +110,6 @@ variable "app_policy_collection_group" {
   type        = string
   default     = "DefaultApplicationRuleCollectionGroup"
   description = "(optional) Name of app policy group"
-
 }
 
 variable "additional_public_ips" {
@@ -126,16 +122,19 @@ variable "additional_public_ips" {
 }
 
 variable "application_rule_collection" {
+  type        = map(any)
   default     = {}
-  description = "One or more application_rule_collection blocks as defined below.."
+  description = "One or more application_rule_collection blocks as defined below."
 }
 
 variable "network_rule_collection" {
+  type        = map(any)
   default     = {}
   description = "One or more network_rule_collection blocks as defined below."
 }
 
 variable "nat_rule_collection" {
+  type        = map(any)
   default     = {}
   description = "One or more nat_rule_collection blocks as defined below."
 }
@@ -165,15 +164,15 @@ variable "firewall_private_ip_ranges" {
 }
 
 variable "dns_servers" {
-  description = "DNS Servers to use with Azure Firewall. Using this also activate DNS Proxy."
+  description = "DNS Servers to use with Azure Firewall. Using this also activates DNS Proxy."
   type        = list(string)
   default     = null
 }
 
 variable "dnat-destination_ip" {
-  description = "Variable to specify that you have destination ip to attach to policy or not.(Destination ip is public ip that is attached to firewall)"
   type        = bool
   default     = true
+  description = "Variable to specify if you have a destination IP to attach to the policy or not (public IP attached to the firewall)."
 }
 
 # Diagnosis Settings Enable
@@ -181,55 +180,55 @@ variable "dnat-destination_ip" {
 variable "enable_diagnostic" {
   type        = bool
   default     = false
-  description = "Set to false to prevent the module from creating the diagnosys setting for the NSG Resource.."
+  description = "Set to false to prevent the module from creating the diagnosis setting for the NSG Resource."
 }
 
 variable "storage_account_id" {
   type        = string
   default     = null
-  description = "Storage account id to pass it to destination details of diagnosys setting of NSG."
+  description = "Storage account ID to pass to destination details of the diagnosis setting for NSG."
 }
 
 variable "eventhub_name" {
   type        = string
   default     = null
-  description = "Eventhub Name to pass it to destination details of diagnosys setting of NSG."
+  description = "Eventhub Name to pass to destination details of the diagnosis setting for NSG."
 }
 
 variable "eventhub_authorization_rule_id" {
   type        = string
   default     = null
-  description = "Eventhub authorization rule id to pass it to destination details of diagnosys setting of NSG."
+  description = "Eventhub authorization rule ID to pass to destination details of the diagnosis setting for NSG."
 }
 
 variable "log_analytics_workspace_id" {
   type        = string
   default     = null
-  description = "log analytics workspace id to pass it to destination details of diagnosys setting of NSG."
+  description = "Log analytics workspace ID to pass to destination details of the diagnosis setting for NSG."
 }
-
 
 variable "days" {
   type        = number
   default     = 365
-  description = "Number of days to create retension policies for te diagnosys setting."
+  description = "Number of days to create retention policies for the diagnosis setting."
 }
 
 variable "firewall_enable" {
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
+  description = "Flag to enable firewall."
 }
 
 variable "identity_type" {
-  description = "Specifies the type of Managed Service Identity that should be configured on this Storage Account. Possible values are `SystemAssigned`, `UserAssigned`, `SystemAssigned, UserAssigned` (to enable both)."
   type        = string
   default     = "UserAssigned"
+  description = "Specifies the type of Managed Service Identity configured on this Storage Account."
 }
 
 variable "policy_rule_enabled" {
   type        = bool
   default     = false
-  description = "Flag used to control creation of policy rules."
+  description = "Flag to control creation of policy rules."
 }
 
 variable "firewall_policy_id" {
@@ -241,88 +240,55 @@ variable "firewall_policy_id" {
 variable "public_ip_prefix_enable" {
   type        = bool
   default     = false
-  description = "Flag to control creation of public ip prefix resource."
+  description = "Flag to control creation of public IP prefix resource."
 }
 
 variable "public_ip_prefix_sku" {
   type        = string
   default     = "Standard"
-  description = "SKU for public ip prefix. Default to standard."
+  description = "SKU for public IP prefix. Default to Standard."
 }
 
 variable "public_ip_prefix_ip_version" {
   type        = string
   default     = "IPv4"
-  description = "The IP Version to use, IPv6 or IPv4. Changing this forces a new resource to be created. Default is IPv4"
+  description = "The IP Version to use, IPv6 or IPv4. Default is IPv4."
 }
 
 variable "prefix_public_ip_names" {
   type        = list(string)
   default     = []
-  description = "Name of prefix public ips."
+  description = "Names of prefix public IPs."
 }
 
 variable "prefix_public_ip_allocation_method" {
-  type    = string
-  default = "Static"
+  type        = string
+  default     = "Static"
+  description = "The allocation method for the prefix public IP."
 }
 
 variable "prefix_public_ip_sku" {
-  type    = string
-  default = "Standard"
+  type        = string
+  default     = "Standard"
+  description = "SKU for the prefix public IP."
 }
 
 variable "public_ip_prefix_length" {
   type        = number
   default     = 31
-  description = "Specifies the number of bits of the prefix. The value can be set between 0 (4,294,967,296 addresses) and 31 (2 addresses). Defaults to 28(16 addresses). Changing this forces a new resource to be created."
+  description = "Specifies the number of bits for the prefix. Default is 31."
 }
 
 variable "enable_prefix_subnet" {
   type        = bool
   default     = false
-  description = "Should subnet id be attached to first public ip name specified in public ip prefix name varible. To be true when there is no individual public ip."
-}
-
-variable "firewall_application_rule_category" {
-  description = "Category for Firewall Application Rule log"
-  type        = string
-  default     = "FirewallApplicationRule"
-}
-
-variable "firewall_network_rule_category" {
-  description = "Category for Firewall Network Rule log"
-  type        = string
-  default     = "FirewallNetworkRule"
-}
-
-variable "firewall_threat_intel_category" {
-  description = "Category for Firewall Threat Intelligence log"
-  type        = string
-  default     = "FirewallThreatIntel"
-}
-
-variable "metric_category" {
-  description = "Category for metrics"
-  type        = string
-  default     = "AllMetrics"
-}
-
-variable "metric_enabled" {
-  description = "Enable or disable metrics"
-  type        = bool
-  default     = true
+  description = "Should the subnet ID be attached to the first public IP name specified in the public IP prefix name variable."
 }
 
 variable "retention_policy_enabled" {
-  description = "Enable or disable retention policy"
   type        = bool
   default     = false
+  description = "Enable or disable retention policy."
 }
 
-variable "retention_days" {
-  description = "Number of days to retain logs"
-  type        = number
-  default     = 30
-}
 
