@@ -1,6 +1,7 @@
 provider "azurerm" {
   features {}
-  subscription_id = "000000-11111-1223-XXX-XXXXXXXXXXXX"
+  subscription_id = "068245d4-3c94-42fe-9c4d-9e5e1cabc60c"
+
 }
 
 locals {
@@ -48,7 +49,7 @@ module "name_specific_subnet" {
   environment          = local.environment
   resource_group_name  = module.resource_group.resource_group_name
   location             = module.resource_group.resource_group_location
-  virtual_network_name = join("", module.vnet.vnet_name)
+  virtual_network_name = join("", module.vnet.*.vnet_name)
   #subnet
   specific_name_subnet  = true
   specific_subnet_names = ["AzureFirewallSubnet"] # Corrected to be a list of strings
@@ -170,6 +171,7 @@ module "firewall" {
           protocols           = ["TCP"]
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["80"]
+          source_addresses    = ["*"]
           translated_port     = "80"
           translated_address  = "10.1.1.1"                           #provide private ip address to translate
           destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall. Here index 1 indicates 'vnet ip' (from public_ip_names     = ["ingress" , "vnet"])
