@@ -328,7 +328,6 @@ variable "retention_days" {
 
 variable "log_category_group" {
   description = "log category group for collecting matrics"
-  type        = "string"
   default     = "AllLogs"
 }
 

@@ -1,16 +1,16 @@
 output "firewall_id" {
   description = "Firewall generated id"
-  value = azurerm_firewall.firewall[0].id
+  value       = azurerm_firewall.firewall[0].id
 }
 
 output "firewall_name" {
-  value = azurerm_firewall.firewall[0].name
+  value       = azurerm_firewall.firewall[0].name
   description = "Firewall name"
 
 }
 
 output "private_ip_address" {
-  value = azurerm_firewall.firewall[0].ip_configuration[0].private_ip_address
+  value       = azurerm_firewall.firewall[0].ip_configuration[0].private_ip_address
   description = "Firewall private IP"
 
 }
