@@ -70,7 +70,7 @@ resource "azurerm_firewall" "firewall" {
   threat_intel_mode   = var.threat_intel_mode
   sku_tier            = var.sku_tier
   sku_name            = var.sku_name
-  firewall_policy_id = azurerm_firewall_policy.policy[0].id
+  firewall_policy_id  = azurerm_firewall_policy.policy[0].id
   tags                = module.labels.tags
   private_ip_ranges   = var.firewall_private_ip_ranges
   dns_servers         = var.dns_servers
