@@ -43,11 +43,6 @@ variable "resource_group_name" {
 }
 
 
-variable "tags" {
-  description = "A map of tags to add to all resources"
-  type        = map(string)
-  default     = {}
-}
 
 #Public IP
 
@@ -131,21 +126,21 @@ variable "additional_public_ips" {
 
 variable "application_rule_collection" {
   description = "One or more application_rule_collection blocks as defined below."
-  type        = list(object({ ... }))
+  type        = any
   default     = []
 }
 
 
 variable "network_rule_collection" {
   description = "One or more network_rule_collection blocks as defined below."
-  type        = list(object({ ... }))
+  type        = any
   default     = []
 }
 
 
 variable "nat_rule_collection" {
   description = "One or more nat_rule_collection blocks as defined below."
-  type        = list(object({ ... }))
+  type        = any
   default     = []
 }
 
@@ -294,35 +289,6 @@ variable "enable_prefix_subnet" {
   description = "Should subnet id be attached to first public ip name specified in public ip prefix name varible. To be true when there is no individual public ip."
 }
 
-variable "firewall_application_rule_category" {
-  description = "Category for Firewall Application Rule log"
-  type        = string
-  default     = "FirewallApplicationRule"
-}
-
-variable "firewall_network_rule_category" {
-  description = "Category for Firewall Network Rule log"
-  type        = string
-  default     = "FirewallNetworkRule"
-}
-
-variable "firewall_threat_intel_category" {
-  description = "Category for Firewall Threat Intelligence log"
-  type        = string
-  default     = "FirewallThreatIntel"
-}
-
-variable "metric_category" {
-  description = "Category for metrics"
-  type        = string
-  default     = "AllMetrics"
-}
-
-variable "metric_enabled" {
-  description = "Enable or disable metrics"
-  type        = bool
-  default     = true
-}
 
 variable "retention_policy_enabled" {
   description = "Enable or disable retention policy"
@@ -330,11 +296,6 @@ variable "retention_policy_enabled" {
   default     = false
 }
 
-variable "retention_days" {
-  description = "Number of days to retain logs"
-  type        = number
-  default     = 30
-}
 
 variable "log_category_group" {
   description = "log category group for collecting metrics"

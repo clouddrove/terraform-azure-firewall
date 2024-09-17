@@ -103,9 +103,10 @@ resource "azurerm_firewall" "firewall" {
     for_each = toset(var.additional_public_ips)
 
     content {
-      name                 = lookup(ip_configuration.value, "name")
-      public_ip_address_id = lookup(ip_configuration.value, "public_ip_address_id")
+      name                 = lookup(ip_configuration.value, "name", null)
+      public_ip_address_id = lookup(ip_configuration.value, "public_ip_address_id", null)
     }
+
   }
 
   lifecycle {
