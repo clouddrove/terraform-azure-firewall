@@ -3,6 +3,7 @@
 ##-----------------------------------------------------------------------------
 module "labels" {
   source      = "clouddrove/labels/azure"
+  version     = "1.0.0"
   name        = var.name
   environment = var.environment
   managedby   = var.managedby
@@ -225,7 +226,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rule_co
 resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rule_collection_group" {
   count              = var.enabled && var.dnat-destination_ip && var.policy_rule_enabled ? 1 : 0
   name               = var.nat_policy_collection_group
-  firewall_policy_id = var.firewall_policy_id == null ? join("", azurerm_firewall_policy.policy.*.id) : var.firewall_policy_id
+  firewall_policy_id = var.firewall_policy_id == null ? join("", azurerm_firewall_policy.policy[*].id) : var.firewall_policy_id
   priority           = 100
 
   dynamic "nat_rule_collection" {

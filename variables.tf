@@ -37,9 +37,11 @@ variable "enabled" {
 }
 
 variable "resource_group_name" {
+  type        = string
   description = "A container that holds related resources for an Azure solution"
   default     = ""
 }
+
 
 variable "tags" {
   description = "A map of tags to add to all resources"

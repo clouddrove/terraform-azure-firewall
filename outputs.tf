@@ -4,10 +4,10 @@ output "firewall_id" {
 }
 
 output "firewall_name" {
-  value       = join("", azurerm_firewall.firewall.*.name)
+  value       = join("", azurerm_firewall.firewall[*].name)
   description = "Firewall name"
-
 }
+
 
 output "private_ip_address" {
   value       = azurerm_firewall.firewall[*].ip_configuration[0].private_ip_address
@@ -15,16 +15,19 @@ output "private_ip_address" {
 }
 
 output "public_ip_id" {
-  value = azurerm_public_ip.public_ip.*.id
+  value = azurerm_public_ip.public_ip[*].id
 }
+
 
 output "public_ip_address" {
-  value = azurerm_public_ip.public_ip.*.ip_address
+  value = azurerm_public_ip.public_ip[*].ip_address
 }
 
+
 output "firewall_policy_id" {
-  value = azurerm_firewall_policy.policy[0].id
+  value = join("", azurerm_firewall_policy.policy[*].id)
 }
+
 
 output "prefix_public_ip_id" {
   value = azurerm_public_ip.prefix_public_ip[*].id
