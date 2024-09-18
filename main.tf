@@ -99,7 +99,7 @@ resource "azurerm_firewall" "firewall" {
     }
   }
 
-   dynamic "ip_configuration" {
+  dynamic "ip_configuration" {
     for_each = toset(var.additional_public_ips)
     content {
       name                 = ip_configuration.value.name
