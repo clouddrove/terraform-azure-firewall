@@ -1,6 +1,6 @@
 provider "azurerm" {
   features {}
-  subscription_id = "000000-11111-1223-XXX-XXXXXXXXXXXX"
+  subscription_id  = "000000-11111-1223-XXX-XXXXXXXXXXXX"
 
 }
 
@@ -49,7 +49,7 @@ module "name_specific_subnet" {
   environment          = local.environment
   resource_group_name  = module.resource_group.resource_group_name
   location             = module.resource_group.resource_group_location
-  virtual_network_name = join("", module.vnet.vnet_name[0])
+  virtual_network_name = module.vnet.vnet_name 
   #subnet
   specific_name_subnet  = true
   specific_subnet_names = ["AzureFirewallSubnet"] # Corrected to be a list of strings
