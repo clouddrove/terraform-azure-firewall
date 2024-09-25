@@ -52,7 +52,7 @@ module "name_specific_subnet" {
   virtual_network_name = module.vnet.vnet_name
   #subnet
   specific_name_subnet  = true
-  specific_subnet_names = ["AzureFirewallSubnet"] 
+  specific_subnet_names = ["AzureFirewallSubnet"]
   subnet_prefixes       = ["10.0.1.0/24"]
   # route_table
   routes = [
