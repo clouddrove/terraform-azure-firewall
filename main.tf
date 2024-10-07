@@ -1,5 +1,5 @@
-##----------------------------------------------------------------------------- 
-## Labels module callled that will be used for naming and tags.   
+##-----------------------------------------------------------------------------
+## Labels module callled that will be used for naming and tags.
 ##-----------------------------------------------------------------------------
 module "labels" {
   source      = "clouddrove/labels/azure"
@@ -10,10 +10,10 @@ module "labels" {
   repository  = var.repository
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Below resource will create Public ip in your environment.
-## These are individual public ips i.e. does not belong to prefix list. 
-## This public ip will be attached to firewall.    
+## These are individual public ips i.e. does not belong to prefix list.
+## This public ip will be attached to firewall.
 ##-----------------------------------------------------------------------------
 resource "azurerm_public_ip" "public_ip" {
   count                = var.enabled && var.firewall_enable ? length(var.public_ip_names) : 0
@@ -26,9 +26,9 @@ resource "azurerm_public_ip" "public_ip" {
   tags                 = module.labels.tags
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Below resource will create Public ip prefix list in your environment.
-## Prefix Public ip will be allocated from this prefix list.    
+## Prefix Public ip will be allocated from this prefix list.
 ##-----------------------------------------------------------------------------
 resource "azurerm_public_ip_prefix" "pip-prefix" {
   count               = var.enabled && var.firewall_enable && var.public_ip_prefix_enable ? 1 : 0
@@ -41,9 +41,9 @@ resource "azurerm_public_ip_prefix" "pip-prefix" {
   tags                = module.labels.tags
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Below resource will create Public ip in your environment.
-## These public ip will be allocated from prefix list created above. 
+## These public ip will be allocated from prefix list created above.
 ##-----------------------------------------------------------------------------
 resource "azurerm_public_ip" "prefix_public_ip" {
   count                = var.enabled && var.firewall_enable && var.public_ip_prefix_enable ? length(var.prefix_public_ip_names) : 0
@@ -58,9 +58,9 @@ resource "azurerm_public_ip" "prefix_public_ip" {
 }
 
 
-##----------------------------------------------------------------------------- 
-## Below resource will deploy firewall in environment. 
-## If you don't have to deploy firewall and only deploy firewall rules than set 'var.firewall_enable' variable to false.   
+##-----------------------------------------------------------------------------
+## Below resource will deploy firewall in environment.
+## If you don't have to deploy firewall and only deploy firewall rules than set 'var.firewall_enable' variable to false.
 ##-----------------------------------------------------------------------------
 resource "azurerm_firewall" "firewall" {
   count               = var.enabled && var.firewall_enable ? 1 : 0
@@ -92,7 +92,7 @@ resource "azurerm_firewall" "firewall" {
     content {
       name = format("%s-%s-pipconfig", module.labels.id, it.value)
       # var.enable_prefix_subnet will only be true when prefix public ips are to be deployed during initial apply and there are no individual public ips to be created.
-      # Individual public ips can be deployed after initial apply and var.enable_ip_subnet variable must be false. 
+      # Individual public ips can be deployed after initial apply and var.enable_ip_subnet variable must be false.
       subnet_id            = var.enable_prefix_subnet ? it.key == 0 ? var.subnet_id : null : null
       public_ip_address_id = azurerm_public_ip.prefix_public_ip.*.id[it.key]
     }
@@ -115,9 +115,9 @@ resource "azurerm_firewall" "firewall" {
   }
 }
 
-##----------------------------------------------------------------------------- 
-## Below resource will create firewall policy in your environment. 
-## Firewall policy can only be deployed along firewall. If only firewall rules are to be deployed than firewall policy must be present in azure environment in which rules are to be deployed.   
+##-----------------------------------------------------------------------------
+## Below resource will create firewall policy in your environment.
+## Firewall policy can only be deployed along firewall. If only firewall rules are to be deployed than firewall policy must be present in azure environment in which rules are to be deployed.
 ##-----------------------------------------------------------------------------
 resource "azurerm_firewall_policy" "policy" {
   count               = var.enabled && var.firewall_enable ? 1 : 0
@@ -134,9 +134,9 @@ resource "azurerm_firewall_policy" "policy" {
   }
 }
 
-##----------------------------------------------------------------------------- 
-## Below resource will deploy a user assigned identity. 
-## This identity will be attached to created firewall policy. So, can be created only when firewall policy is created using this module. 
+##-----------------------------------------------------------------------------
+## Below resource will deploy a user assigned identity.
+## This identity will be attached to created firewall policy. So, can be created only when firewall policy is created using this module.
 ##-----------------------------------------------------------------------------
 resource "azurerm_user_assigned_identity" "identity" {
   count               = var.enabled && var.firewall_enable ? 1 : 0
@@ -145,9 +145,9 @@ resource "azurerm_user_assigned_identity" "identity" {
   resource_group_name = var.resource_group_name
 }
 
-##----------------------------------------------------------------------------- 
-## Below resource will create firewall policy rule collection group. 
-## All application rules will be there in this group. 
+##-----------------------------------------------------------------------------
+## Below resource will create firewall policy rule collection group.
+## All application rules will be there in this group.
 ##-----------------------------------------------------------------------------
 resource "azurerm_firewall_policy_rule_collection_group" "app_policy_rule_collection_group" {
   count              = var.enabled && var.policy_rule_enabled ? 1 : 0
@@ -183,9 +183,9 @@ resource "azurerm_firewall_policy_rule_collection_group" "app_policy_rule_collec
   }
 }
 
-##----------------------------------------------------------------------------- 
-## Below resource will create firewall policy rule collection group. 
-## All network rules will be there in this group. 
+##-----------------------------------------------------------------------------
+## Below resource will create firewall policy rule collection group.
+## All network rules will be there in this group.
 ##-----------------------------------------------------------------------------
 resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rule_collection_group" {
   count              = var.enabled && var.policy_rule_enabled ? 1 : 0
@@ -218,9 +218,9 @@ resource "azurerm_firewall_policy_rule_collection_group" "network_policy_rule_co
   }
 }
 
-##----------------------------------------------------------------------------- 
-## Below resource will create firewall policy rule collection group. 
-## All dnat rules will be there in this group. 
+##-----------------------------------------------------------------------------
+## Below resource will create firewall policy rule collection group.
+## All dnat rules will be there in this group.
 ##-----------------------------------------------------------------------------
 resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rule_collection_group" {
   count              = var.enabled && var.dnat-destination_ip && var.policy_rule_enabled ? 1 : 0
@@ -251,8 +251,8 @@ resource "azurerm_firewall_policy_rule_collection_group" "nat_policy_rule_collec
   }
 }
 
-##----------------------------------------------------------------------------- 
-## Below resource will create diagnostic setting for firewall. 
+##-----------------------------------------------------------------------------
+## Below resource will create diagnostic setting for firewall.
 ##-----------------------------------------------------------------------------
 resource "azurerm_monitor_diagnostic_setting" "firewall_diagnostic-setting" {
   count                          = var.enabled && var.enable_diagnostic ? 1 : 0

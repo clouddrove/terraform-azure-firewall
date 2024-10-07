@@ -1,5 +1,5 @@
-##----------------------------------------------------------------------------- 
-## Firewall module call. 
+##-----------------------------------------------------------------------------
+## Firewall module call.
 ## All firewall related resources will be deployed from this module, i.e. including firewall and firewall rules.
 ##-----------------------------------------------------------------------------
 module "firewall" {

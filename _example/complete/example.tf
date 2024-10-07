@@ -7,7 +7,7 @@ locals {
   environment = "test"
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Resource Group module call
 ## Resource group in which all resources will be deployed.
 ##-----------------------------------------------------------------------------
@@ -20,9 +20,9 @@ module "resource_group" {
   location    = "East US"
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Virtual Network module call.
-## Virtual Network in firewall specific subnet will be created. 
+## Virtual Network in firewall specific subnet will be created.
 ##-----------------------------------------------------------------------------
 module "vnet" {
   depends_on          = [module.resource_group]
@@ -35,9 +35,9 @@ module "vnet" {
   address_space       = "10.0.0.0/16"
 }
 
-##----------------------------------------------------------------------------- 
-## Subnet module call. 
-## Name specific subnet for firewall will be created. 
+##-----------------------------------------------------------------------------
+## Subnet module call.
+## Name specific subnet for firewall will be created.
 ##-----------------------------------------------------------------------------
 module "name_specific_subnet" {
   depends_on           = [module.vnet]
@@ -62,9 +62,9 @@ module "name_specific_subnet" {
   ]
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Log Analytic Module Call.
-## Log Analytic workspace for firerwall diagnostic setting. 
+## Log Analytic workspace for firerwall diagnostic setting.
 ##-----------------------------------------------------------------------------
 module "log-analytics" {
   source                           = "clouddrove/log-analytics/azure"
@@ -78,8 +78,8 @@ module "log-analytics" {
   log_analytics_workspace_location = module.resource_group.resource_group_location
 }
 
-##----------------------------------------------------------------------------- 
-## Firewall module call. 
+##-----------------------------------------------------------------------------
+## Firewall module call.
 ## All firewall related resources will be deployed from this module, i.e. including firewall and firewall rules.
 ##-----------------------------------------------------------------------------
 module "firewall" {
