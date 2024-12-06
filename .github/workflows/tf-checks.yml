@@ -6,21 +6,21 @@ on:
   workflow_dispatch:
 jobs:
   basic:
-    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.8
+    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@master
     with:
       working_directory: './examples/basic/'
 
   complete:
-    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.8
+    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@master
     with:
       working_directory: './examples/complete/'
 
   firewall-with-isolated-rules:
-   uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.8
+   uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@master
    with:
     working_directory: './examples/firewall-with-isolated-rules/'
   
   firewall-with-public-ip-prefix:
-    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.8
+    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@master
     with:
      working_directory: './examples/firewall-with-public-ip-prefix/'  
