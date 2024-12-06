@@ -1,95 +1,15 @@
-provider "azurerm" {
-  features {}
-}
-
-locals {
-  name        = "app"
-  environment = "test"
-}
-
-##----------------------------------------------------------------------------- 
-## Resource Group module call
-## Resource group in which all resources will be deployed.
-##-----------------------------------------------------------------------------
-module "resource_group" {
-  source      = "clouddrove/resource-group/azure"
-  version     = "1.0.2"
-  name        = local.name
-  environment = local.environment
-  label_order = ["name", "environment", ]
-  location    = "East US"
-}
-
-##----------------------------------------------------------------------------- 
-## Virtual Network module call.
-## Virtual Network in firewall specific subnet will be created. 
-##-----------------------------------------------------------------------------
-module "vnet" {
-  depends_on          = [module.resource_group]
-  source              = "clouddrove/vnet/azure"
-  version             = "1.0.3"
-  name                = local.name
-  environment         = local.environment
-  resource_group_name = module.resource_group.resource_group_name
-  location            = module.resource_group.resource_group_location
-  address_space       = "10.0.0.0/16"
-}
-
-##----------------------------------------------------------------------------- 
-## Subnet module call. 
-## Name specific subnet for firewall will be created. 
-##-----------------------------------------------------------------------------
-module "name_specific_subnet" {
-  depends_on           = [module.vnet]
-  source               = "clouddrove/subnet/azure"
-  version              = "1.0.2"
-  name                 = local.name
-  environment          = local.environment
-  resource_group_name  = module.resource_group.resource_group_name
-  location             = module.resource_group.resource_group_location
-  virtual_network_name = join("", module.vnet.vnet_name)
-  #subnet
-  specific_name_subnet  = true
-  specific_subnet_names = "AzureFirewallSubnet"
-  subnet_prefixes       = ["10.0.1.0/24"]
-  # route_table
-  routes = [
-    {
-      name           = "rt-test"
-      address_prefix = "0.0.0.0/0"
-      next_hop_type  = "Internet"
-    }
-  ]
-}
-
-##----------------------------------------------------------------------------- 
-## Log Analytic Module Call.
-## Log Analytic workspace for firerwall diagnostic setting. 
-##-----------------------------------------------------------------------------
-module "log-analytics" {
-  source                           = "clouddrove/log-analytics/azure"
-  version                          = "1.0.1"
-  name                             = local.name
-  environment                      = local.environment
-  label_order                      = ["name", "environment"]
-  create_log_analytics_workspace   = true
-  log_analytics_workspace_sku      = "PerGB2018"
-  resource_group_name              = module.resource_group.resource_group_name
-  log_analytics_workspace_location = module.resource_group.resource_group_location
-}
 
 ##----------------------------------------------------------------------------- 
 ## Firewall module call. 
 ## All firewall related resources will be deployed from this module, i.e. including firewall and firewall rules.
 ##-----------------------------------------------------------------------------
 module "firewall" {
-  depends_on          = [module.name_specific_subnet]
   source              = "../.."
-  name                = local.name
-  environment         = local.environment
-  resource_group_name = module.resource_group.resource_group_name
-  location            = module.resource_group.resource_group_location
-  subnet_id           = module.name_specific_subnet.specific_subnet_id[0]
+  name                = "app"
+  environment         = "test"
+  resource_group_name = "test-rg"
+  location            = "Canada Central"
+  subnet_id           = "/subscriptions/---------subnet---------"
   public_ip_names     = ["ingress", "vnet"] // Name of public ips you want to create.
 
   # additional_public_ips = [{
@@ -99,7 +19,7 @@ module "firewall" {
   firewall_enable            = true
   policy_rule_enabled        = true
   enable_diagnostic          = false
-  log_analytics_workspace_id = module.log-analytics.workspace_id
+  log_analytics_workspace_id = "/subscriptions/---------log_analytic_workspace---------"
 
   application_rule_collection = [
     {

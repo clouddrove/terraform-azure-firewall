@@ -1,6 +1,8 @@
 provider "azurerm" {
   features {}
+  subscription_id = "068245d4-3c94-42fe-9c4d-9e5e1cabc60c"
 }
+
 
 locals {
   name        = "app"
@@ -27,12 +29,12 @@ module "resource_group" {
 module "vnet" {
   depends_on          = [module.resource_group]
   source              = "clouddrove/vnet/azure"
-  version             = "1.0.3"
+  version             = "1.0.4"
   name                = local.name
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
-  address_space       = "10.0.0.0/16"
+  address_spaces      = ["10.0.0.0/16"]
 }
 
 ##----------------------------------------------------------------------------- 
@@ -40,18 +42,18 @@ module "vnet" {
 ## Name specific subnet for firewall will be created. 
 ##-----------------------------------------------------------------------------
 module "name_specific_subnet" {
-  depends_on           = [module.vnet]
   source               = "clouddrove/subnet/azure"
-  version              = "1.0.2"
-  name                 = local.name
-  environment          = local.environment
+  version              = "1.2.1"
+  name                 = "app"
+  environment          = "test"
   resource_group_name  = module.resource_group.resource_group_name
   location             = module.resource_group.resource_group_location
-  virtual_network_name = join("", module.vnet.vnet_name)
+  virtual_network_name = module.vnet.vnet_name
   #subnet
   specific_name_subnet  = true
-  specific_subnet_names = "AzureFirewallSubnet"
+  specific_subnet_names = ["AzureFirewallSubnet"]
   subnet_prefixes       = ["10.0.1.0/24"]
+  enable_route_table    = false
   # route_table
   routes = [
     {
@@ -68,7 +70,7 @@ module "name_specific_subnet" {
 ##-----------------------------------------------------------------------------
 module "log-analytics" {
   source                           = "clouddrove/log-analytics/azure"
-  version                          = "1.0.1"
+  version                          = "2.0.0"
   name                             = local.name
   environment                      = local.environment
   label_order                      = ["name", "environment"]
@@ -78,41 +80,32 @@ module "log-analytics" {
   log_analytics_workspace_location = module.resource_group.resource_group_location
 }
 
-
 ##----------------------------------------------------------------------------- 
 ## Firewall module call. 
-## From this module call firewall rules will not be deployed and thus no rule collection group will be created.  
+## All firewall related resources will be deployed from this module, i.e. including firewall and firewall rules.
 ##-----------------------------------------------------------------------------
 module "firewall" {
-  depends_on          = [module.name_specific_subnet]
-  source              = "../.."
-  name                = local.name
-  environment         = local.environment
-  resource_group_name = module.resource_group.resource_group_name
-  location            = module.resource_group.resource_group_location
-  subnet_id           = module.name_specific_subnet.specific_subnet_id[0]
-  public_ip_names     = ["ingress", "vnet"] // Name of public ips you want to create.
+  depends_on              = [module.name_specific_subnet]
+  source                  = "../.."
+  name                    = local.name
+  environment             = local.environment
+  resource_group_name     = module.resource_group.resource_group_name
+  location                = module.resource_group.resource_group_location
+  subnet_id               = module.name_specific_subnet.specific_subnet_id[0]
+  public_ip_prefix_enable = true
+  prefix_public_ip_names  = ["test-1", "test-2"]
+  public_ip_prefix_length = 31
+  enable_prefix_subnet    = true
+
   # additional_public_ips = [{
   # name = "public-ip_name",
   # public_ip_address_id = "public-ip_resource_id"
   #   } ]
   firewall_enable            = true
-  enable_diagnostic          = true
+  policy_rule_enabled        = true
+  enable_diagnostic          = false
   log_analytics_workspace_id = module.log-analytics.workspace_id
 
-}
-
-##----------------------------------------------------------------------------- 
-## Firewall-Rules module call. 
-## This is same module as 'firewall module', but from this module only firewall rules and rule collection group will be deployed. 
-##-----------------------------------------------------------------------------
-module "firewall-rules" {
-  depends_on          = [module.firewall]
-  source              = "../.."
-  name                = local.name
-  environment         = local.environment
-  policy_rule_enabled = true
-  firewall_policy_id  = module.firewall.firewall_policy_id
   application_rule_collection = [
     {
       name     = "example_app_policy"
@@ -137,6 +130,7 @@ module "firewall-rules" {
       ]
     }
   ]
+
   network_rule_collection = [
     {
       name     = "example_network_policy"
@@ -181,8 +175,8 @@ module "firewall-rules" {
           destination_ports   = ["80"]
           source_addresses    = ["*"]
           translated_port     = "80"
-          translated_address  = "10.1.1.1"                           #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall. Here index 1 indicates 'vnet ip' (from public_ip_names     = ["ingress" , "vnet"])
+          translated_address  = "10.1.1.1"                                  #provide private ip address to translate
+          destination_address = module.firewall.prefix_public_ip_address[1] //Public ip associated with firewall. Here index 1 indicates 'vnet ip' (from public_ip_names     = ["ingress" , "vnet"])
 
         },
         {
@@ -191,12 +185,13 @@ module "firewall-rules" {
           destination_ports   = ["443"]
           source_addresses    = ["*"]
           translated_port     = "443"
-          translated_address  = "10.1.1.1"                           #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[1] //Public ip associated with firewall
+          translated_address  = "10.1.1.1"                                  #provide private ip address to translate
+          destination_address = module.firewall.prefix_public_ip_address[1] //Public ip associated with firewall
 
         }
       ]
     },
+
     {
       name     = "example-nat-policy-2"
       priority = "100"
@@ -207,8 +202,8 @@ module "firewall-rules" {
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["80"]
           translated_port     = "80"
-          translated_address  = "10.1.1.2"                           #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[0] //Public ip associated with firewall.Here index 0 indicates 'ingress ip' (from public_ip_names     = ["ingress" , "vnet"])
+          translated_address  = "10.1.1.2"                                  #provide private ip address to translate
+          destination_address = module.firewall.prefix_public_ip_address[0] //Public ip associated with firewall.Here index 0 indicates 'ingress ip' (from public_ip_names     = ["ingress" , "vnet"])
 
         },
         {
@@ -217,8 +212,8 @@ module "firewall-rules" {
           source_addresses    = ["*"] // ["X.X.X.X"]
           destination_ports   = ["443"]
           translated_port     = "443"
-          translated_address  = "10.1.1.2"                           #provide private ip address to translate
-          destination_address = module.firewall.public_ip_address[0] //Public ip associated with firewall
+          translated_address  = "10.1.1.2"                                  #provide private ip address to translate
+          destination_address = module.firewall.prefix_public_ip_address[0] //Public ip associated with firewall
         }
       ]
     }

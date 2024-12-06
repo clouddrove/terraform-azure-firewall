@@ -288,3 +288,10 @@ variable "enable_prefix_subnet" {
   default     = false
   description = "Should subnet id be attached to first public ip name specified in public ip prefix name varible. To be true when there is no individual public ip."
 }
+
+variable "Metric_enable" {
+  type        = bool
+  default     = true
+  description = "Is this Diagnostic Metric enabled? Defaults to true."
+}
+
