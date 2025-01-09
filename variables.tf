@@ -39,6 +39,7 @@ variable "enabled" {
 variable "resource_group_name" {
   description = "A container that holds related resources for an Azure solution"
   default     = ""
+  type        = string
 }
 
 variable "tags" {
@@ -52,11 +53,13 @@ variable "tags" {
 variable "public_ip_allocation_method" {
   description = "Defines the allocation method for this IP address. Possible values are Static or Dynamic"
   default     = "Static"
+  type        = string
 }
 
 variable "public_ip_sku" {
   description = "The SKU of the Public IP. Accepted values are Basic and Standard. Defaults to Basic"
   default     = "Standard"
+  type        = string
 }
 
 #firewall
@@ -126,18 +129,59 @@ variable "additional_public_ips" {
 }
 
 variable "application_rule_collection" {
-  default     = {}
-  description = "One or more application_rule_collection blocks as defined below.."
+  description = "Application rule collections for the firewall policy"
+  type = list(object({
+    name     = string
+    priority = number
+    action   = string
+    rules = list(object({
+      name              = string
+      source_addresses  = list(string)
+      source_ip_groups  = list(string)
+      destination_fqdns = list(string)
+      protocols = list(object({
+        port = number
+        type = string
+      }))
+    }))
+  }))
 }
 
 variable "network_rule_collection" {
-  default     = {}
-  description = "One or more network_rule_collection blocks as defined below."
+  description = "Network rule collections for the firewall policy"
+  type = list(object({
+    name     = string
+    priority = number
+    action   = string
+    rules = list(object({
+      name                  = string
+      protocols             = list(string) # List of protocol types (e.g., TCP, UDP)
+      destination_ports     = list(string) # List of destination ports
+      source_addresses      = list(string) # Optional list of source addresses
+      source_ip_groups      = list(string) # Optional list of source IP groups
+      destination_addresses = list(string) # Optional list of destination addresses
+      destination_ip_groups = list(string) # Optional list of destination IP groups
+      destination_fqdns     = list(string) # Optional list of destination FQDNs
+    }))
+  }))
 }
 
+
 variable "nat_rule_collection" {
-  default     = {}
-  description = "One or more nat_rule_collection blocks as defined below."
+  description = "NAT rule collections for the firewall policy"
+  type = list(object({
+    name     = string
+    priority = number
+    rules = list(object({
+      name                = string
+      protocols           = list(string) # List of protocols (e.g., TCP, UDP)
+      destination_ports   = list(string) # List of destination ports
+      source_addresses    = list(string) # Optional list of source addresses
+      destination_address = string       # Optional destination address
+      translated_address  = list(string) # List of translated addresses
+      translated_port     = string       # Translated port
+    }))
+  }))
 }
 
 variable "public_ip_names" {
